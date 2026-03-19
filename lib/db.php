@@ -5,7 +5,8 @@ $_db_conn = null;
 
 function db(): mysqli {
     global $_db_conn;
-    if ($_db_conn instanceof mysqli && $_db_conn->ping()) {
+    // PHP 8.4: mysqli::ping() is deprecated; check instance only
+    if ($_db_conn instanceof mysqli) {
         return $_db_conn;
     }
     $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
@@ -15,6 +16,10 @@ function db(): mysqli {
         die('Service temporarily unavailable.');
     }
     $conn->set_charset('utf8mb4');
+    // MySQL 8.0: enforce strict SQL mode for this connection
+    if (!$conn->query("SET SESSION sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'")) {
+        log_error('MySQL session config failed: ' . $conn->error);
+    }
     $_db_conn = $conn;
     return $conn;
 }

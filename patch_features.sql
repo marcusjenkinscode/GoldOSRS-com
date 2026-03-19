@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `raffle_prizes` (
   `active`     TINYINT(1)    DEFAULT 1,
   `created_at` TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
   KEY `idx_active` (`active`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ── FIX 3: Seed some starter raffle prizes ───────────────────────────────────
 -- Only inserts if no prizes exist yet (INSERT IGNORE on auto-increment PK never

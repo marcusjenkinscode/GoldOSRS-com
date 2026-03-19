@@ -1,11 +1,11 @@
 -- ════════════════════════════════════════════════════════════
 -- GoldOSRS — Full Database Schema
--- MySQL 5.7+ compatible
+-- MySQL 8.0+ (IONOS shared hosting)
 -- Import: phpMyAdmin → your database → Import → select this file
 -- ════════════════════════════════════════════════════════════
 
 SET FOREIGN_KEY_CHECKS = 0;
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET SQL_MODE = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION";
 SET time_zone = "+00:00";
 
 -- ── Users ─────────────────────────────────────────────────────────────────────
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `created_at`          TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
   KEY `idx_email`    (`email`),
   KEY `idx_username` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ── Orders ────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS `orders` (
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL,
   KEY `idx_status` (`status`),
   KEY `idx_user`   (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ── Chat Sessions ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS `chat_sessions` (
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `chat_sessions` (
   `created_at`        TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL,
   KEY `idx_status` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ── Chat Messages ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS `chat_messages` (
@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS `chat_messages` (
   FOREIGN KEY (`session_id`) REFERENCES `chat_sessions`(`id`) ON DELETE CASCADE,
   KEY `idx_session` (`session_id`),
   KEY `idx_created` (`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ── Games (Provably Fair Gambling) ────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS `games` (
@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS `games` (
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
   KEY `idx_user` (`user_id`),
   KEY `idx_type` (`game_type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ── Toasts ────────────────────────────────────────────────────────────────────
 -- username column included here natively (no ALTER TABLE needed)
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS `toasts` (
   `shown`      TINYINT(1)   DEFAULT 0,
   `created_at` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
   KEY `idx_shown` (`shown`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ── Prices ────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS `prices` (
@@ -129,14 +129,14 @@ CREATE TABLE IF NOT EXISTS `prices` (
   `value`      DECIMAL(10,4) NOT NULL,
   `label`      VARCHAR(100)  DEFAULT NULL,
   `updated_at` TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ── Config ────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS `config` (
   `key`        VARCHAR(100) PRIMARY KEY,
   `value`      TEXT         NOT NULL,
   `updated_at` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ── Settings (required by core.php setting() function) ────────────────────────
 CREATE TABLE IF NOT EXISTS `settings` (
@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS `settings` (
   `value`      TEXT         NOT NULL DEFAULT '',
   `label`      VARCHAR(200) DEFAULT NULL,
   `updated_at` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ── Deposits ──────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS `deposits` (
@@ -164,7 +164,7 @@ CREATE TABLE IF NOT EXISTS `deposits` (
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
   KEY `idx_address` (`address`),
   KEY `idx_status`  (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ── Withdrawals ───────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS `withdrawals` (
@@ -178,7 +178,7 @@ CREATE TABLE IF NOT EXISTS `withdrawals` (
   `admin_notes`  TEXT        DEFAULT NULL,
   `created_at`   TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ── Admin Log ─────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS `admin_log` (
@@ -190,7 +190,7 @@ CREATE TABLE IF NOT EXISTS `admin_log` (
   `details`     TEXT         DEFAULT NULL,
   `ip`          VARCHAR(45)  DEFAULT NULL,
   `created_at`  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ── Raffle Prizes ──────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS `raffle_prizes` (
@@ -201,7 +201,7 @@ CREATE TABLE IF NOT EXISTS `raffle_prizes` (
   `active`     TINYINT(1)    DEFAULT 1,
   `created_at` TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
   KEY `idx_active` (`active`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ════════════════════════════════════════════════════════════
 -- SEED DATA

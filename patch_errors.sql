@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `settings` (
   `value`      TEXT NOT NULL DEFAULT '',
   `label`      VARCHAR(200) DEFAULT NULL,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Seed all settings the old codebase expects
 INSERT INTO `settings` (`key`, `value`, `label`) VALUES

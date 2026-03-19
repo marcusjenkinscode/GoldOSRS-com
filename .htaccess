@@ -1,5 +1,5 @@
-# GoldOSRS — Apache .htaccess
-Options -Indexes -MultiViews
+# GoldOSRS — Apache .htaccess (IONOS Shared Hosting · PHP 8.4 · MySQL 8.0)
+Options -Indexes
 
 # ── HTTPS Redirect ──────────────────────────────────────────────────────────
 RewriteEngine On
@@ -40,11 +40,20 @@ RewriteRule .* - [F,L]
 RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK|DELETE|PUT|PATCH)
 RewriteRule .* - [F,L]
 
-# ── Limit request body (5MB) ─────────────────────────────────────────────────
-LimitRequestBody 5242880
-
 # ── PHP settings ─────────────────────────────────────────────────────────────
+# On IONOS shared hosting PHP runs as FastCGI/PHP-FPM.
+# PHP settings are configured via .user.ini (in the same directory).
+# The IfModule blocks below are kept for hosts that run PHP as an Apache module.
 <IfModule mod_php8.c>
+  php_flag display_errors Off
+  php_flag log_errors On
+  php_value error_log logs/php_error.log
+  php_value session.cookie_httponly 1
+  php_value session.cookie_secure 1
+  php_value session.use_strict_mode 1
+  php_value session.cookie_samesite Lax
+</IfModule>
+<IfModule mod_php.c>
   php_flag display_errors Off
   php_flag log_errors On
   php_value error_log logs/php_error.log
