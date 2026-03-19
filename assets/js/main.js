@@ -6,18 +6,16 @@
   const RUNES = 'ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ'.split('');
   const container = document.getElementById('runeRain');
   if (!container) return;
-  const COUNT = window.innerWidth < 768 ? 8 : 16;
+  const COUNT = window.innerWidth < 768 ? 10 : 20;
   for (let i = 0; i < COUNT; i++) {
-    setTimeout(() => {
-      const el = document.createElement('div');
-      el.className = 'rune';
-      el.textContent = RUNES[Math.floor(Math.random() * RUNES.length)];
-      const left = Math.random() * 100;
-      const dur  = 14 + Math.random() * 12;
-      const delay = Math.random() * -20;
-      el.style.cssText = `left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s`;
-      container.appendChild(el);
-    }, i * 120);
+    const el = document.createElement('div');
+    el.className = 'rune';
+    el.textContent = RUNES[Math.floor(Math.random() * RUNES.length)];
+    const left = Math.random() * 100;
+    const dur  = 18 + Math.random() * 14; // 18–32 s, slow & smooth
+    const delay = -(Math.random() * dur); // spread across full cycle immediately
+    el.style.cssText = `left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s`;
+    container.appendChild(el);
   }
 })();
 

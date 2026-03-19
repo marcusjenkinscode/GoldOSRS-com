@@ -45,18 +45,18 @@ body {
 }
 .rune {
   position: absolute;
-  top: -80px;
-  font-size: clamp(28px, 4vw, 52px);
-  color: rgba(255,215,0,0.06);
+  top: 0;
+  font-size: clamp(18px, 3vw, 40px);
+  color: rgba(255,215,0,0.07);
   animation: runeFall linear infinite;
   will-change: transform;
   user-select: none;
 }
 @keyframes runeFall {
-  0%   { transform: translateY(-80px) rotate(0deg); opacity: 0; }
-  5%   { opacity: 1; }
-  95%  { opacity: 0.04; }
-  100% { transform: translateY(110vh) rotate(20deg); opacity: 0; }
+  0%   { transform: translateY(-120px); opacity: 0; }
+  4%   { opacity: 1; }
+  92%  { opacity: 0.07; }
+  100% { transform: translateY(110vh); opacity: 0; }
 }
 
 /* ── Loading Screen ────────────────────────────────────── */

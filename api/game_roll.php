@@ -14,7 +14,7 @@ $game_type = post('game');
 $bet       = (int)post('bet');
 $extra     = post('extra'); // e.g. target for dice, side for coinflip, action for blackjack
 
-$valid_games = ['dice','coinflip','blackjack','highlow'];
+$valid_games = ['dice','coinflip','blackjack','highlow','rs3dice'];
 if (!in_array($game_type, $valid_games, true)) { json_out(['error' => 'Invalid game'], 400); }
 
 $min_bet = (int)get_config('min_bet_osrs', '5');
@@ -75,6 +75,45 @@ switch ($game_type) {
         $win_amount = $won ? (int)round($bet * $multiplier) : 0;
         $result_str = "Rolled {$number} ({$actual}) — " . ($won ? "WIN x{$multiplier}" : 'LOSE');
         break;
+
+    case 'rs3dice':
+        // Roll 3 dice, each with 6 RS3-themed faces
+        $faces = ['🐉','⚔️','🛡️','🪙','💎','🌿'];
+        $seed1 = provably_fair_roll($server_seed, $client_seed, $nonce,     6); // 0-5
+        $seed2 = provably_fair_roll($server_seed, $client_seed, $nonce + 1, 6);
+        $seed3 = provably_fair_roll($server_seed, $client_seed, $nonce + 2, 6);
+        $f1 = $faces[$seed1]; $f2 = $faces[$seed2]; $f3 = $faces[$seed3];
+        $all_dragon = ($seed1 === 0 && $seed2 === 0 && $seed3 === 0);
+        $all_match  = ($seed1 === $seed2 && $seed2 === $seed3);
+        $any_match  = ($seed1 === $seed2 || $seed2 === $seed3 || $seed1 === $seed3);
+        if ($all_dragon)     { $multiplier = 10.0; $won = true;  $result_str = "Triple Dragon! {$f1}{$f2}{$f3}"; }
+        elseif ($all_match)  { $multiplier =  5.0; $won = true;  $result_str = "Triple Match! {$f1}{$f2}{$f3}"; }
+        elseif ($any_match)  { $multiplier =  2.0; $won = true;  $result_str = "Pair! {$f1}{$f2}{$f3}"; }
+        else                 { $multiplier =  0.0; $won = false; $result_str = "No match {$f1}{$f2}{$f3}"; }
+        $win_amount = $won ? (int)round($bet * $multiplier) : 0;
+        // Return early with extra face data
+        if ($won) {
+            db_exec('UPDATE users SET balance_osrs=balance_osrs+? WHERE id=?', 'ii', $win_amount - $bet, $user['id']);
+        } else {
+            db_exec('UPDATE users SET balance_osrs=balance_osrs-? WHERE id=?', 'ii', $bet, $user['id']);
+        }
+        db_insert('INSERT INTO games (user_id,game_type,bet,multiplier,result,win_amount,won,server_seed,server_hash,client_seed,nonce) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+            'isidsiisssi', $user['id'], 'rs3dice', $bet, $multiplier, $result_str, $win_amount, (int)$won, $server_seed, $server_hash, $client_seed, $nonce);
+        $updated = db_one('SELECT balance_osrs FROM users WHERE id=?', 'i', $user['id']);
+        json_out([
+            'won'         => $won,
+            'roll'        => $roll_pct,
+            'result'      => $result_str,
+            'win_amount'  => $win_amount,
+            'multiplier'  => $multiplier,
+            'new_balance' => $updated['balance_osrs'],
+            'rs3_faces'   => [$f1, $f2, $f3],
+            'server_seed' => $server_seed,
+            'server_hash' => $server_hash,
+            'client_seed' => $client_seed,
+            'nonce'       => $nonce,
+        ]);
+        break; // json_out exits, but kept for clarity
 
     case 'blackjack':
         // Simplified server-side blackjack
@@ -154,8 +193,8 @@ switch ($game_type) {
         break;
 }
 
-// For non-blackjack games, update balance and insert record
-if ($game_type !== 'blackjack') {
+// For non-blackjack, non-rs3dice games, update balance and insert record
+if ($game_type !== 'blackjack' && $game_type !== 'rs3dice') {
     if ($won) {
         db_exec('UPDATE users SET balance_osrs=balance_osrs+? WHERE id=?', 'ii', $win_amount - $bet, $user['id']);
         db_insert("INSERT INTO toasts (type, content) VALUES ('real', ?)", 's', "🎲 " . ucfirst($user['username']) . " just won " . fmt_gp($win_amount) . " on " . ucfirst($game_type) . "!");

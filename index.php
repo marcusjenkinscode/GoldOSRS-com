@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             // Insert order
             $order_id = db_insert(
                 'INSERT INTO orders (user_id, guest_email, guest_rsn, type, service_type, game, amount, price_usd, payment_method, rsn, trade_method, details, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
-                'isssssidssss',
+                'isssssidsssss',
                 $user_id, $email, $rsn, $type, $service_type, $game, $amount, $price_usd, $payment_method, $rsn, $trade_method, $details, 'pending'
             );
 

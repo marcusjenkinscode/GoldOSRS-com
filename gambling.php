@@ -74,6 +74,15 @@ require_once __DIR__ . '/includes/header.php';
         <div class="game-limits">Min: 5M · Max: 500M</div>
         <button class="btn-gold mt-16" style="width:100%">📊 Play High/Low</button>
       </div>
+      <div class="card game-card" onclick="<?= $user?'openGame(\'rs3dice\')':'window.location=\'/login.php\'' ?>" style="border-color:rgba(255,80,0,0.4)">
+        <div class="card-badge" style="background:rgba(255,80,0,0.15);color:#ff5000;border-color:rgba(255,80,0,0.3)">🔥 RS3</div>
+        <div class="card-icon">🐉</div>
+        <h3>RS3 Dragon Dice</h3>
+        <p>RuneScape 3 style: roll 3 dragon dice. Matching faces pay 5x — dragon roll pays 10x!</p>
+        <div class="game-odds">Win chance: ~30% · Dragon jackpot: 10x</div>
+        <div class="game-limits">Min: 5M · Max: 1,000M</div>
+        <button class="btn-gold mt-16" style="width:100%">🐉 Roll Dragons</button>
+      </div>
       <div class="card" style="opacity:0.6">
         <div class="card-icon">🌸</div>
         <h3>Flower Poker</h3>
@@ -197,8 +206,47 @@ const games = {
           <div id="bjResult" style="margin-top:8px;font-size:20px;min-height:28px"></div>
         </div>`;
     }
+  },
+  rs3dice: {
+    title: '🐉 RS3 Dragon Dice',
+    render() {
+      return `
+        <div class="balance-bar" style="margin-bottom:20px"><span class="text-muted" style="font-size:13px">Balance</span><span id="gBal" style="color:var(--gold);font-weight:700">${fmtM(currentBalance)}</span></div>
+        <div class="text-center">
+          <div style="display:flex;justify-content:center;gap:16px;font-size:64px;margin:12px 0" id="rs3DiceDisplay">
+            <span id="d1">🎲</span><span id="d2">🎲</span><span id="d3">🎲</span>
+          </div>
+          <p class="text-muted" style="font-size:12px;margin-bottom:4px">3 matching faces = 5x · All dragons (🐉) = 10x · Any match = 2x</p>
+          <div class="form-group" style="max-width:220px;margin:0 auto 12px"><label>Bet (M GP)</label><input id="betAmt" type="number" value="10" min="5" max="1000" style="text-align:center;padding:10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Cinzel',serif;font-size:14px;width:100%;outline:none"></div>
+          <div class="bet-quick"><button onclick="setBet(5)">5M</button><button onclick="setBet(50)">50M</button><button onclick="setBet(200)">200M</button><button onclick="setBetHalf()">½</button><button onclick="setBetMax()">Max</button></div>
+          <button onclick="rollRS3Dice()" class="btn-primary" style="width:80%;margin-top:16px;background:linear-gradient(135deg,#c0392b,#e74c3c)" id="rs3Btn">🐉 Roll Dragons</button>
+          <div id="rs3Result" style="margin-top:16px;font-size:18px;min-height:28px"></div>
+        </div>`;
+    }
   }
 };
+
+async function rollRS3Dice() {
+  const btn = document.getElementById('rs3Btn');
+  btn.disabled = true; btn.textContent = 'Rolling…';
+  const FACES = ['🐉','⚔️','🛡️','🪙','💎','🌿'];
+  ['d1','d2','d3'].forEach(id => { document.getElementById(id).textContent = '🔄'; });
+  const result = await gameRoll('rs3dice', '');
+  setTimeout(() => {
+    btn.disabled = false; btn.textContent = '🐉 Roll Dragons';
+    if (result?.error) { alert(result.error); ['d1','d2','d3'].forEach(id => { document.getElementById(id).textContent = '🎲'; }); return; }
+    if (result) {
+      const faces = result.rs3_faces || [FACES[0], FACES[1], FACES[2]];
+      document.getElementById('d1').textContent = faces[0];
+      document.getElementById('d2').textContent = faces[1];
+      document.getElementById('d3').textContent = faces[2];
+      currentBalance = result.new_balance;
+      document.getElementById('gBal').textContent = fmtM(currentBalance);
+      document.getElementById('rs3Result').className = result.won ? 'result-won' : 'result-lost';
+      document.getElementById('rs3Result').textContent = result.won ? `✅ ${result.result} — Won ${fmtM(result.win_amount)}!` : `❌ ${result.result}`;
+    }
+  }, 900);
+}
 
 function openGame(g) {
   currentGame = g;
