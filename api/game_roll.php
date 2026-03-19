@@ -152,7 +152,7 @@ switch ($game_type) {
                 // Bust
                 db_exec('UPDATE users SET balance_osrs=balance_osrs-? WHERE id=?', 'ii', $bet, $user['id']);
                 db_insert('INSERT INTO games (user_id,game_type,bet,multiplier,result,win_amount,won,server_seed,server_hash,client_seed,nonce) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
-                    'isiidsiissi', $user['id'],'blackjack',$bet,0,"Bust ({$p_total})",0,0,$server_seed,$server_hash,$client_seed,$nonce);
+                    'isidsiisssi', $user['id'],'blackjack',$bet,0,"Bust ({$p_total})",0,0,$server_seed,$server_hash,$client_seed,$nonce);
                 unset($_SESSION['bj_hand'], $_SESSION['bj_player'], $_SESSION['bj_dealer'], $_SESSION['bj_deck']);
                 json_out(['player' => $_SESSION['bj_player'] ?? [], 'player_total' => $p_total, 'result' => "Bust! ({$p_total})", 'action' => 'bust', 'won' => false, 'win_amount' => 0]);
             }
@@ -185,7 +185,7 @@ switch ($game_type) {
                 db_exec('UPDATE users SET balance_osrs=balance_osrs-? WHERE id=?', 'ii', $bet, $user['id']);
             }
             db_insert('INSERT INTO games (user_id,game_type,bet,multiplier,result,win_amount,won,server_seed,server_hash,client_seed,nonce) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
-                'isidsiissi', $user['id'],'blackjack',$bet,$multiplier,$result_str,$win_amount,(int)$won,$server_seed,$server_hash,$client_seed,$nonce);
+                'isidsiisssi', $user['id'],'blackjack',$bet,$multiplier,$result_str,$win_amount,(int)$won,$server_seed,$server_hash,$client_seed,$nonce);
 
             $updated = db_one('SELECT balance_osrs FROM users WHERE id=?', 'i', $user['id']);
             json_out(['player' => $_SESSION['bj_player'] ?? [], 'dealer' => $dealer, 'player_total' => $p_total, 'dealer_total' => $d_total, 'result' => $result_str, 'action' => 'done', 'won' => $won, 'win_amount' => $win_amount, 'new_balance' => $updated['balance_osrs']]);
@@ -202,7 +202,7 @@ if ($game_type !== 'blackjack' && $game_type !== 'rs3dice') {
         db_exec('UPDATE users SET balance_osrs=balance_osrs-? WHERE id=?', 'ii', $bet, $user['id']);
     }
     db_insert('INSERT INTO games (user_id,game_type,bet,multiplier,result,win_amount,won,server_seed,server_hash,client_seed,nonce) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
-        'isidsiissi', $user['id'], $game_type, $bet, $multiplier, $result_str, $win_amount, (int)$won, $server_seed, $server_hash, $client_seed, $nonce);
+        'isidsiisssi', $user['id'], $game_type, $bet, $multiplier, $result_str, $win_amount, (int)$won, $server_seed, $server_hash, $client_seed, $nonce);
 
     $updated = db_one('SELECT balance_osrs FROM users WHERE id=?', 'i', $user['id']);
     json_out([

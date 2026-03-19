@@ -197,7 +197,7 @@ CREATE TABLE IF NOT EXISTS `raffle_prizes` (
   `id`         INT           AUTO_INCREMENT PRIMARY KEY,
   `name`       VARCHAR(100)  NOT NULL,
   `value`      BIGINT        NOT NULL COMMENT 'Prize value in GP millions',
-  `added_date` DATE          NOT NULL DEFAULT (CURRENT_DATE),
+  `added_date` DATE          NOT NULL,
   `active`     TINYINT(1)    DEFAULT 1,
   `created_at` TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
   KEY `idx_active` (`active`)

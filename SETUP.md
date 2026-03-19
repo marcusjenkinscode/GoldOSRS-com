@@ -1,72 +1,174 @@
 # GoldOSRS — cPanel Shared Hosting Setup Guide
 
-## 1. Upload Files
-Upload ALL files to your `public_html/` directory via cPanel File Manager or FTP.
-Keep directory structure exactly as-is.
+## Requirements
 
-## 2. Create MySQL Database
-1. cPanel → MySQL Databases → Create Database: `goldosrs`
-2. Create a MySQL user and set a strong password
-3. Add the user to the database with ALL PRIVILEGES
-4. Import `db.sql` via phpMyAdmin
+| Requirement | Minimum | Recommended |
+|-------------|---------|-------------|
+| PHP         | 7.4     | 8.1+        |
+| MySQL       | 5.7     | 8.0+        |
+| Apache      | 2.4     | 2.4         |
+| PHP Extensions | `mysqli`, `curl`, `json`, `mbstring` | same |
 
-## 3. Configure config.php
-Edit `/config.php` and fill in:
+> **⚠️ Before you start:** Check your PHP version in cPanel → "Select PHP Version" or "MultiPHP Manager".
+> The site requires **PHP 7.4 or higher**. If your host defaults to PHP 5.x or older 7.x, switch it first.
+
+---
+
+## Step 1 — Upload Files
+
+1. Log in to cPanel → **File Manager**
+2. Navigate to `public_html/` (or your domain's root folder)
+3. Upload **all** files and folders from this repository, keeping the directory structure exactly as-is
+4. **Important:** Enable "Show Hidden Files" in File Manager settings so `.htaccess` is visible and uploaded
+
+Alternatively, use FTP (FileZilla, Cyberduck, etc.) — hidden files are shown by default.
+
+---
+
+## Step 2 — Create MySQL Database
+
+1. cPanel → **MySQL Databases**
+2. Under "Create New Database", enter a name (e.g. `goldosrs`) → click **Create Database**
+3. Under "MySQL Users" → "Add New User", create a user with a **strong password** → click **Create User**
+4. Under "Add User to Database", select your new user and database → click **Add** → grant **ALL PRIVILEGES**
+5. Note down the full names — on cPanel, they are prefixed with your username (e.g. `cpuser_goldosrs`, `cpuser_dbuser`)
+
+### Import the SQL file
+
+1. cPanel → **phpMyAdmin** → click your new database in the left panel
+2. Click the **Import** tab at the top
+3. Click "Choose File" and select `db.sql` from your computer
+4. Leave all settings at their defaults → click **Go**
+5. You should see "Import has been successfully finished"
+
+> **Note:** If you see any errors during import, make sure your MySQL version is 5.7 or higher.
+> The `patch_errors.sql` and `patch_features.sql` files are for upgrading an **existing** database only — do **not** import them on a fresh install.
+
+---
+
+## Step 3 — Configure config.php
+
+Open `config.php` in File Manager (Edit) or via FTP and fill in your details:
+
 ```php
+// ── Database ─────────────────────────────────────────────
+// Use the FULL names as shown in cPanel MySQL Databases
 define('DB_HOST', 'localhost');
-define('DB_USER', 'cpanelusername_dbuser');
+define('DB_USER', 'cpanelusername_dbuser');   // e.g. mysite_golduser
 define('DB_PASS', 'your_strong_password');
-define('DB_NAME', 'cpanelusername_goldosrs');
-define('SITE_URL', 'https://goldosrs.com');
+define('DB_NAME', 'cpanelusername_goldosrs'); // e.g. mysite_goldosrs
+
+// ── Site ─────────────────────────────────────────────────
+define('SITE_URL', 'https://yourdomain.com'); // No trailing slash
+define('SITE_EMAIL', 'support@yourdomain.com');
+
+// ── Discord (optional — leave placeholders if not using) ─
 define('DISCORD_WEBHOOK_URL', 'https://discord.com/api/webhooks/...');
+
+// ── Bitcoin (optional — leave placeholder for manual payments) ─
 define('STATIC_BTC_ADDRESS', 'bc1q...');
 ```
 
-## 4. Set Folder Permissions
-```
-logs/     → 755 (writable by PHP)
-data/     → 755 (writable by PHP)
-```
-Create these folders if they don't exist in cPanel File Manager.
+> **Tip:** For `DB_USER` and `DB_NAME`, the full names are shown in cPanel → MySQL Databases under "Current Databases" and "Current Users".
 
-## 5. Set Up Cron Jobs (cPanel → Cron Jobs)
+---
+
+## Step 4 — Create Required Folders
+
+The site writes log files and caches to two folders. Create them if they do not exist:
+
+1. cPanel → File Manager → navigate into `public_html/`
+2. Click "New Folder" and create: `logs`
+3. Click "New Folder" and create: `data`
+4. Right-click each folder → **Permissions** → set to `755`
+
+> The site will also try to create these automatically on first load, but creating them manually ensures correct permissions.
+
+---
+
+## Step 5 — Verify .htaccess is Uploaded
+
+The `.htaccess` file is **hidden** by default in File Manager.
+
+1. In File Manager, click **Settings** (top right) → enable "Show Hidden Files (dotfiles)"
+2. Confirm `.htaccess` exists in `public_html/`
+3. If it is missing, re-upload it from the repository
+
+> **If you get a 500 error immediately after upload:** The `.htaccess` file is often the cause.
+> Temporarily rename it to `htaccess.bak` in File Manager. If the site loads (without clean URLs),
+> the `.htaccess` has a problem — see Troubleshooting below.
+
+---
+
+## Step 6 — Test the Site
+
+Visit your domain in a browser. You should see the GoldOSRS homepage.
+
+If you see a **500 Internal Server Error**, see the Troubleshooting section below.
+
+---
+
+## Step 7 — Change Admin Password ⚠️
+
+The default admin account is:
+- **Username:** `admin`
+- **Password:** `password`
+
+**Change this immediately** — log in at `/login.php` then go to `/settings.php`.
+
+---
+
+## Step 8 — Set Up Cron Jobs (Optional)
+
+cPanel → **Cron Jobs**. First find your PHP path using cPanel Terminal: `which php`
+
 ```
 # BTC payment checker — every minute
-* * * * * php /home/USERNAME/public_html/cron/check_btc.php
+* * * * * /usr/bin/php /home/USERNAME/public_html/cron/check_btc.php >> /dev/null 2>&1
 
-# Toast generator — every minute
-* * * * * php /home/USERNAME/public_html/cron/toasts.php
+# Toast notification generator — every minute
+* * * * * /usr/bin/php /home/USERNAME/public_html/cron/toasts.php >> /dev/null 2>&1
 
-# Discord listener — every minute
-* * * * * php /home/USERNAME/public_html/cron/discord_listener.php
+# Discord reply listener — every minute (only if Discord bot is configured)
+* * * * * /usr/bin/php /home/USERNAME/public_html/cron/discord_listener.php >> /dev/null 2>&1
 ```
-Replace `USERNAME` with your actual cPanel username.
 
-## 6. Change Admin Password
-The default admin account is:
-- Username: `admin`
-- Password: `password` (CHANGE THIS IMMEDIATELY)
+Replace `USERNAME` with your cPanel username and `/usr/bin/php` with the path from `which php`.
 
-Login at `/login.php` then go to `/settings.php` to change password.
+---
 
-## 7. Discord Integration (Optional but recommended)
+## Step 9 — SSL Certificate
+
+Make sure SSL is active on your domain (cPanel → **Let's Encrypt SSL** or **SSL/TLS** → install a free certificate).
+
+Once SSL is active, the `.htaccess` will automatically redirect all HTTP traffic to HTTPS.
+
+> **If you do not have SSL yet** and are getting redirect loops, temporarily comment out the HTTPS
+> redirect lines in `.htaccess` (lines starting with `RewriteCond %{HTTPS}` and the `RewriteRule` below it).
+
+---
+
+## Step 10 — Discord Integration (Optional)
+
 1. Go to your Discord server → Settings → Integrations → Webhooks
-2. Create a webhook in your support channel
-3. Copy the URL into `config.php` as `DISCORD_WEBHOOK_URL`
-4. For two-way chat (reading Discord replies), create a Bot at discord.com/developers
-5. Add Bot token and channel ID to `config.php`
+2. Create a webhook in your support channel → copy the URL
+3. Paste it into `config.php` as `DISCORD_WEBHOOK_URL`
+4. For two-way chat (admin replies via Discord), create a Bot at discord.com/developers
+5. Add the Bot token, channel ID, and guild ID to `config.php`
 
-## 8. Bitcoin Payments
-- **Simple mode**: Set `STATIC_BTC_ADDRESS` in config.php. All orders use this one address.
-  You manually verify payments and mark orders paid in `/admin/orders.php`.
-- **Automatic mode**: Run Electrum wallet daemon on your server.
-  The cron job checks blockchain.info API and auto-confirms payments.
+---
 
-## 9. SSL Certificate
-Make sure SSL is active in cPanel (Let's Encrypt is free).
-The `.htaccess` forces HTTPS automatically once SSL is installed.
+## Step 11 — Bitcoin Payments
+
+- **Simple mode** (recommended for most users): Set `STATIC_BTC_ADDRESS` in config.php.
+  All orders show this one address. You manually verify payments and mark orders complete in `/admin/orders.php`.
+- **Automatic mode**: Requires running the Electrum wallet daemon on a VPS/dedicated server.
+  The cron job (`cron/check_btc.php`) checks the blockchain and auto-confirms payments.
+
+---
 
 ## File Structure
+
 ```
 public_html/
 ├── index.php          ← Homepage
@@ -90,10 +192,12 @@ public_html/
 ├── reset.php          ← Password reset
 ├── logout.php         ← Logout
 ├── config.php         ← ⚠️ CONFIGURE THIS FIRST
-├── db.sql             ← Import to MySQL
-├── .htaccess          ← Security + URL rewriting
+├── db.sql             ← Import to MySQL (fresh install)
+├── patch_errors.sql   ← Run only when upgrading an existing DB
+├── patch_features.sql ← Run only when upgrading an existing DB
+├── .htaccess          ← Security + URL rewriting (hidden file — must be uploaded)
 ├── robots.txt
-├── admin/             ← Admin panel (role protected)
+├── admin/             ← Admin panel (admin role required)
 │   ├── index.php      ← Dashboard
 │   ├── chat.php       ← Live chat monitor
 │   ├── orders.php     ← Order management
@@ -107,15 +211,15 @@ public_html/
 │   ├── toasts.php
 │   ├── check_payment.php
 │   └── admin_reply.php
-├── cron/              ← Background jobs
+├── cron/              ← Background jobs (run via cPanel cron)
 │   ├── check_btc.php
 │   ├── discord_listener.php
 │   └── toasts.php
-├── lib/               ← Core libraries
+├── lib/               ← Core libraries (not web-accessible)
 │   ├── db.php
 │   ├── functions.php
 │   └── electrum.php
-├── includes/          ← Page templates
+├── includes/          ← Page templates (not web-accessible)
 │   ├── header.php
 │   └── footer.php
 ├── assets/
@@ -124,21 +228,76 @@ public_html/
 │   └── images/
 │       ├── logo.svg
 │       └── cursor.svg
-├── logs/              ← Create this folder (chmod 755)
-└── data/              ← Create this folder (chmod 755)
+├── logs/              ← Create this folder (chmod 755) — holds error logs
+└── data/              ← Create this folder (chmod 755) — holds cache files
 ```
 
+---
+
 ## Security Checklist
-- [ ] Changed admin password
-- [ ] Updated all values in config.php
-- [ ] SSL certificate active
-- [ ] logs/ and data/ folders created with 755 permissions
-- [ ] db.sql imported successfully
-- [ ] Cron jobs set up
-- [ ] .htaccess is uploaded (may be hidden — enable "Show Hidden Files" in File Manager)
+
+- [ ] Changed admin password from `password` to something strong
+- [ ] Filled in all values in `config.php` (no placeholders remaining)
+- [ ] SSL certificate active and HTTPS redirect working
+- [ ] `logs/` and `data/` folders created with `755` permissions
+- [ ] `db.sql` imported successfully with no errors
+- [ ] `.htaccess` uploaded (hidden file — must enable "Show Hidden Files" in File Manager)
+- [ ] Cron jobs set up (if using BTC payments or Discord)
+
+---
 
 ## Troubleshooting
-- **Blank page**: Check logs/php_error.log or enable display_errors temporarily in config.php
-- **DB errors**: Verify DB credentials in config.php match exactly what cPanel shows
-- **Cron not running**: Use full path to PHP: `which php` in cPanel Terminal to find it
-- **Chat not working**: Check that logs/ and data/ are writable by PHP (chmod 755)
+
+### 500 Internal Server Error on every page
+
+This is usually one of three things:
+
+1. **Wrong PHP version** — Go to cPanel → MultiPHP Manager (or "Select PHP Version") and set PHP 7.4 or higher for your domain.
+
+2. **`.htaccess` problem** — Rename `.htaccess` to `htaccess.bak` temporarily. If the site loads, the `.htaccess` is the issue. Check that Apache `mod_rewrite` is enabled (cPanel → "Apache Handlers" or ask your host).
+
+3. **PHP extension missing** — Your host's PHP build may be missing `mysqli` or `curl`. Go to cPanel → "Select PHP Version" → "Extensions" and ensure `mysqli`, `curl`, `json`, and `mbstring` are ticked.
+
+### Blank white page (no error shown)
+
+PHP is running but crashing silently. To see the error:
+- Temporarily add these two lines to the very top of `index.php` (remove after debugging):
+  ```php
+  ini_set('display_errors', 1);
+  error_reporting(E_ALL);
+  ```
+- Or check `logs/php_error.log` in File Manager (if the `logs/` folder was created with correct permissions).
+
+### "Service temporarily unavailable" message
+
+The database connection failed. Double-check:
+- `DB_USER`, `DB_PASS`, `DB_NAME` in `config.php` are the full cPanel-prefixed names
+- The user has ALL PRIVILEGES on the database
+- `DB_HOST` is `localhost` (correct for almost all cPanel hosts)
+
+### Database import errors in phpMyAdmin
+
+- If you see "Table already exists" errors, the import ran before — you can safely ignore these if the site works
+- If you see a syntax error on the `raffle_prizes` table, you may be on MySQL 5.6 or older — upgrade MySQL or ask your host to enable MySQL 5.7+
+
+### Redirect loop / ERR_TOO_MANY_REDIRECTS
+
+Your SSL is terminating at a proxy (CloudFlare, load balancer) before reaching Apache. Replace the HTTPS redirect block in `.htaccess` with this version that checks the `X-Forwarded-Proto` header:
+```apache
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+```
+This redirects only when both Apache sees HTTP **and** the proxy header also indicates HTTP — preventing loops behind HTTPS proxies.
+
+### Cron not running
+
+- Use the full path to PHP: run `which php` in cPanel Terminal
+- Confirm the cron output redirection (`>> /dev/null 2>&1`) — without it, cPanel may email you on every run
+- Check the cron job log in cPanel → Cron Jobs → "Current Cron Jobs"
+
+### Chat not working
+
+Check that `logs/` and `data/` folders exist and are writable by PHP (permission `755` or `777`).
+Check `logs/error.log` for specific error messages.
