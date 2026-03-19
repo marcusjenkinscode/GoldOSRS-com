@@ -26,8 +26,7 @@ RewriteRule ^([^\.]+)$ $1.php [NC,L]
 
 # ── Block access to sensitive files ─────────────────────────────────────────
 <FilesMatch "\.(env|sql|log|lock|json|git|htpasswd|ini|bak|sh)$">
-  Order allow,deny
-  Deny from all
+  Require all denied
 </FilesMatch>
 
 # Block access to lib/, cron/, data/, logs/ directories

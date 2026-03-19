@@ -11,7 +11,9 @@ function bootstrap(): void {
     if (!is_dir(DATA_PATH)) mkdir(DATA_PATH, 0755, true);
 
     session_name(SESSION_NAME);
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
 
     // Regenerate session ID periodically (prevent fixation)
     if (empty($_SESSION['_init'])) {
@@ -147,7 +149,7 @@ function fmt_gp(int $millions): string {
 
 // ── Discord webhook ───────────────────────────────────────────────────────────
 function discord_send(string $message, string $username = 'GoldOSRS Bot'): bool {
-    if (!defined('DISCORD_WEBHOOK_URL') || !DISCORD_WEBHOOK_URL || str_contains(DISCORD_WEBHOOK_URL, 'YOUR_WEBHOOK')) {
+    if (!defined('DISCORD_WEBHOOK_URL') || !DISCORD_WEBHOOK_URL || strpos(DISCORD_WEBHOOK_URL, 'YOUR_WEBHOOK') !== false) {
         log_error('Discord webhook not configured');
         return false;
     }

@@ -37,10 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
             // Determine order type
             $type = 'service';
-            if (str_contains($service_type, 'Gold') || str_contains($service_type, 'gold')) $type = 'buy';
-            elseif (str_contains($service_type, 'Swap') || str_contains($service_type, 'swap')) $type = 'swap';
+            if (strpos($service_type, 'Gold') !== false || strpos($service_type, 'gold') !== false) $type = 'buy';
+            elseif (strpos($service_type, 'Swap') !== false || strpos($service_type, 'swap') !== false) $type = 'swap';
 
-            $game = str_contains(strtolower($service_type), 'rs3') ? 'rs3' : 'osrs';
+            $game = strpos(strtolower($service_type), 'rs3') !== false ? 'rs3' : 'osrs';
 
             // Price calculation
             $price_key = ($game === 'rs3') ? 'rs3_' . $payment_method : 'osrs_' . $payment_method;

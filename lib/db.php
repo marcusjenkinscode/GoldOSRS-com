@@ -19,8 +19,8 @@ function db(): mysqli {
     return $conn;
 }
 
-// Shorthand prepared query — returns mysqli_result or true/false
-function dbq(string $sql, string $types = '', ...$params): mysqli_stmt|bool {
+// Shorthand prepared query — returns mysqli_stmt on success or false on failure
+function dbq(string $sql, string $types = '', ...$params) {
     $stmt = db()->prepare($sql);
     if (!$stmt) {
         log_error('DB prepare failed: ' . db()->error . ' | SQL: ' . $sql);

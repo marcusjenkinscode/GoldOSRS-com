@@ -11,7 +11,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../lib/functions.php';
 bootstrap();
 
-if (!defined('DISCORD_BOT_TOKEN') || str_contains(DISCORD_BOT_TOKEN, 'YOUR_BOT')) {
+if (!defined('DISCORD_BOT_TOKEN') || strpos(DISCORD_BOT_TOKEN, 'YOUR_BOT') !== false) {
     exit; // Not configured
 }
 
@@ -69,7 +69,7 @@ foreach ($messages as $msg) {
     // Parse session ID from message thread / content
     // Expected admin reply format: anything NOT starting with [User:
     // Messages from our webhook start with [User: or [Admin: — skip those
-    if (str_starts_with($content, '[User:') || str_starts_with($content, '[Admin:') || str_starts_with($content, '🆕') || str_starts_with($content, '🛒') || str_starts_with($content, '✅') || str_starts_with($content, '💰') || str_starts_with($content, '₿') || str_starts_with($content, '🎲')) {
+    if (strpos($content, '[User:') === 0 || strpos($content, '[Admin:') === 0 || strpos($content, '🆕') === 0 || strpos($content, '🛒') === 0 || strpos($content, '✅') === 0 || strpos($content, '💰') === 0 || strpos($content, '₿') === 0 || strpos($content, '🎲') === 0) {
         continue;
     }
 
