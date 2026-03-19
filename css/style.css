@@ -1,0 +1,770 @@
+/* ==========================================================================
+   GoldOSRS.com – Main Stylesheet
+   Dark OSRS-themed design with gold accents
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   CSS Custom Properties
+   -------------------------------------------------------------------------- */
+:root {
+    --color-bg:         #0d0d0d;
+    --color-bg-card:    #1a1a1a;
+    --color-bg-nav:     #111111;
+    --color-gold:       #c8a227;
+    --color-gold-light: #e8c04a;
+    --color-gold-dark:  #8a6d10;
+    --color-white:      #f0e8d4;
+    --color-grey:       #888888;
+    --color-success:    #2ecc71;
+    --color-error:      #e74c3c;
+    --color-warning:    #f39c12;
+    --color-border:     #333333;
+    --font-title:       'Cinzel', serif;
+    --font-body:        'Open Sans', sans-serif;
+    --radius:           6px;
+    --transition:       0.2s ease;
+    --shadow:           0 4px 20px rgba(0,0,0,0.6);
+}
+
+/* --------------------------------------------------------------------------
+   Reset & Base
+   -------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    background-color: var(--color-bg);
+    color: var(--color-white);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main { flex: 1; }
+
+a { color: var(--color-gold); text-decoration: none; transition: color var(--transition); }
+a:hover { color: var(--color-gold-light); }
+
+img { max-width: 100%; display: block; }
+
+h1,h2,h3,h4,h5,h6 { font-family: var(--font-title); color: var(--color-gold); line-height: 1.2; }
+
+ul { list-style: none; }
+
+/* --------------------------------------------------------------------------
+   Utility
+   -------------------------------------------------------------------------- */
+.gold-text   { color: var(--color-gold); }
+.white-text  { color: var(--color-white); }
+.text-center { text-align: center; }
+.mt-1 { margin-top:  .5rem; }
+.mt-2 { margin-top:  1rem;  }
+.mt-3 { margin-top:  2rem;  }
+.mb-1 { margin-bottom: .5rem; }
+.mb-2 { margin-bottom: 1rem;  }
+.mb-3 { margin-bottom: 2rem;  }
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+.btn {
+    display: inline-block;
+    padding: .65rem 1.5rem;
+    border-radius: var(--radius);
+    font-family: var(--font-title);
+    font-size: .9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--transition);
+    border: 2px solid transparent;
+    letter-spacing: .05em;
+}
+
+.btn-gold {
+    background: var(--color-gold);
+    color: #0d0d0d;
+    border-color: var(--color-gold-dark);
+}
+.btn-gold:hover {
+    background: var(--color-gold-light);
+    color: #0d0d0d;
+    border-color: var(--color-gold);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(200,162,39,.4);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--color-gold);
+    border-color: var(--color-gold);
+}
+.btn-outline:hover {
+    background: var(--color-gold);
+    color: #0d0d0d;
+}
+
+.btn-danger {
+    background: var(--color-error);
+    color: #fff;
+    border-color: #c0392b;
+}
+.btn-danger:hover { background: #c0392b; }
+
+.btn-lg { padding: .85rem 2rem; font-size: 1.05rem; }
+.btn-sm { padding: .4rem .9rem;  font-size: .8rem;  }
+.btn-block { width: 100%; text-align: center; display: block; }
+
+/* --------------------------------------------------------------------------
+   Navigation
+   -------------------------------------------------------------------------- */
+.navbar {
+    background: var(--color-bg-nav);
+    border-bottom: 2px solid var(--color-gold-dark);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 12px rgba(0,0,0,.6);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 62px;
+}
+
+.nav-brand {
+    font-family: var(--font-title);
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    color: var(--color-white);
+    font-size: .9rem;
+    font-weight: 600;
+    padding: .25rem 0;
+    position: relative;
+}
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0; right: 0;
+    height: 2px;
+    background: var(--color-gold);
+    transform: scaleX(0);
+    transition: transform var(--transition);
+}
+.nav-link:hover { color: var(--color-gold); }
+.nav-link:hover::after { transform: scaleX(1); }
+
+.basket-link { display: flex; align-items: center; gap: .35rem; }
+
+.basket-badge {
+    background: var(--color-gold);
+    color: #0d0d0d;
+    border-radius: 50%;
+    width: 20px; height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+.nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--color-white);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .nav-toggle { display: block; }
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 62px; left: 0; right: 0;
+        background: var(--color-bg-nav);
+        padding: 1rem 1.25rem;
+        gap: .75rem;
+        border-bottom: 2px solid var(--color-gold-dark);
+    }
+    .nav-links.open { display: flex; }
+}
+
+/* --------------------------------------------------------------------------
+   Flash messages
+   -------------------------------------------------------------------------- */
+.flash {
+    padding: .85rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: .9rem;
+    border-left: 4px solid transparent;
+}
+.flash-success { background: rgba(46,204,113,.15); border-color: var(--color-success); color: var(--color-success); }
+.flash-error   { background: rgba(231,76,60,.15);  border-color: var(--color-error);   color: var(--color-error);   }
+.flash-warning { background: rgba(243,156,18,.15); border-color: var(--color-warning); color: var(--color-warning); }
+.flash-close   { background: none; border: none; color: inherit; font-size: 1.2rem; cursor: pointer; padding: 0 .25rem; }
+
+/* --------------------------------------------------------------------------
+   Hero / Home
+   -------------------------------------------------------------------------- */
+.hero {
+    position: relative;
+    min-height: 92vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+}
+
+/* Runes canvas sits behind everything */
+#runesCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: .18;
+    pointer-events: none;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 2rem;
+    max-width: 750px;
+}
+
+.hero-title {
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    line-height: 1;
+    text-shadow: 0 2px 20px rgba(200,162,39,.6);
+    margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    color: var(--color-white);
+    opacity: .85;
+    margin-bottom: 2rem;
+}
+
+.hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* --------------------------------------------------------------------------
+   Cards / Services
+   -------------------------------------------------------------------------- */
+.section { padding: 5rem 0; }
+.section-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 3rem;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+.card:hover {
+    border-color: var(--color-gold-dark);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+}
+
+.card-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+.card-title { font-size: 1.25rem; margin-bottom: .5rem; }
+.card-price { color: var(--color-gold); font-weight: 700; font-size: 1.3rem; margin-bottom: 1rem; }
+.card-desc  { color: var(--color-grey); font-size: .9rem; margin-bottom: 1.5rem; }
+
+/* --------------------------------------------------------------------------
+   Forms
+   -------------------------------------------------------------------------- */
+.form-section {
+    max-width: 560px;
+    margin: 4rem auto;
+    padding: 2.5rem;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.form-title {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 1.75rem;
+}
+
+.form-group { margin-bottom: 1.25rem; }
+
+label {
+    display: block;
+    font-size: .88rem;
+    font-weight: 600;
+    color: var(--color-gold-light);
+    margin-bottom: .4rem;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+select,
+textarea {
+    width: 100%;
+    background: #111;
+    border: 1px solid var(--color-border);
+    color: var(--color-white);
+    padding: .65rem .85rem;
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: .95rem;
+    transition: border-color var(--transition);
+}
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--color-gold);
+}
+select option { background: #111; }
+
+.form-check { display: flex; align-items: center; gap: .5rem; cursor: pointer; }
+.form-check input[type="checkbox"], .form-check input[type="radio"] { width: auto; }
+
+.form-error { color: var(--color-error); font-size: .82rem; margin-top: .3rem; }
+.form-hint  { color: var(--color-grey);  font-size: .82rem; margin-top: .3rem; }
+
+/* --------------------------------------------------------------------------
+   Payment method tabs
+   -------------------------------------------------------------------------- */
+.pay-tabs { display: flex; gap: .75rem; margin-bottom: 1.5rem; }
+
+.pay-tab {
+    flex: 1;
+    padding: .8rem;
+    background: #111;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius);
+    color: var(--color-white);
+    font-family: var(--font-title);
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: all var(--transition);
+}
+.pay-tab.active, .pay-tab:hover {
+    border-color: var(--color-gold);
+    color: var(--color-gold);
+}
+
+.pay-panel { display: none; }
+.pay-panel.active { display: block; }
+
+/* --------------------------------------------------------------------------
+   Countdown timer
+   -------------------------------------------------------------------------- */
+.countdown-bar {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-gold-dark);
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+.countdown-bar .timer-label { font-size: .85rem; color: var(--color-grey); margin-bottom: .25rem; }
+.countdown-bar .timer-display {
+    font-family: var(--font-title);
+    font-size: 2rem;
+    color: var(--color-gold);
+    letter-spacing: .1em;
+}
+.countdown-bar.expired .timer-display { color: var(--color-warning); }
+.countdown-bar .timer-warning { color: var(--color-warning); font-size: .85rem; margin-top: .25rem; display:none; }
+
+/* --------------------------------------------------------------------------
+   Basket
+   -------------------------------------------------------------------------- */
+.basket-table { width: 100%; border-collapse: collapse; margin-bottom: 1.25rem; }
+.basket-table th,
+.basket-table td { padding: .75rem 1rem; border-bottom: 1px solid var(--color-border); text-align: left; }
+.basket-table th { color: var(--color-gold); font-family: var(--font-title); font-size: .9rem; }
+.basket-table td { font-size: .9rem; }
+.basket-total { text-align: right; font-size: 1.1rem; color: var(--color-gold); font-weight: 700; }
+
+/* --------------------------------------------------------------------------
+   Gambling / Games
+   -------------------------------------------------------------------------- */
+.game-tabs {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.game-tab-btn {
+    padding: .65rem 1.25rem;
+    background: var(--color-bg-card);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius);
+    color: var(--color-white);
+    font-family: var(--font-title);
+    cursor: pointer;
+    transition: all var(--transition);
+    font-size: .9rem;
+}
+.game-tab-btn.active,
+.game-tab-btn:hover {
+    border-color: var(--color-gold);
+    color: var(--color-gold);
+}
+
+.game-panel { display: none; }
+.game-panel.active { display: block; }
+
+.game-board {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    text-align: center;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.game-result {
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-title);
+    font-size: 1.4rem;
+    margin: 1rem 0;
+    transition: all var(--transition);
+}
+.game-result.win  { color: var(--color-success); }
+.game-result.loss { color: var(--color-error);   }
+
+/* Dice */
+.dice-display {
+    font-size: 5rem;
+    display: block;
+    margin: 1rem 0;
+    transition: transform .3s ease;
+}
+.dice-display.rolling { animation: rollDice .5s ease infinite; }
+
+@keyframes rollDice {
+    0%   { transform: rotate(0deg)   scale(1);   }
+    25%  { transform: rotate(90deg)  scale(.9);  }
+    50%  { transform: rotate(180deg) scale(1.1); }
+    75%  { transform: rotate(270deg) scale(.9);  }
+    100% { transform: rotate(360deg) scale(1);   }
+}
+
+/* Slots */
+.slot-reels {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.slot-reel {
+    width: 80px; height: 80px;
+    background: #111;
+    border: 2px solid var(--color-gold-dark);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    transition: all .3s ease;
+}
+.slot-reel.spinning { animation: spinReel .15s linear infinite; }
+
+@keyframes spinReel {
+    0%   { opacity: 1;   transform: translateY(0);     }
+    50%  { opacity: 0.4; transform: translateY(-10px); }
+    100% { opacity: 1;   transform: translateY(0);     }
+}
+
+/* RS3 game */
+.rs3-gems {
+    display: flex;
+    justify-content: center;
+    gap: .75rem;
+    margin: 1.5rem 0;
+    flex-wrap: wrap;
+}
+
+.rs3-gem {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all var(--transition);
+    background: #111;
+}
+.rs3-gem:hover { transform: scale(1.1); border-color: var(--color-gold); }
+.rs3-gem.selected { border-color: var(--color-gold); box-shadow: 0 0 12px var(--color-gold); }
+
+/* Betting history table */
+.bet-history { margin-top: 2rem; }
+.bet-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.bet-table th,
+.bet-table td { padding: .6rem .8rem; border-bottom: 1px solid var(--color-border); text-align: left; }
+.bet-table th { color: var(--color-gold); font-family: var(--font-title); }
+.bet-table .win  { color: var(--color-success); }
+.bet-table .loss { color: var(--color-error);   }
+
+/* --------------------------------------------------------------------------
+   Raffle
+   -------------------------------------------------------------------------- */
+.raffle-hero {
+    text-align: center;
+    padding: 4rem 1.25rem;
+}
+
+.prize-pool-display {
+    font-family: var(--font-title);
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    color: var(--color-gold);
+    text-shadow: 0 0 30px rgba(200,162,39,.5);
+    margin-bottom: .5rem;
+}
+
+.chest-wrapper {
+    margin: 2rem auto;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.chest-icon {
+    font-size: 8rem;
+    display: block;
+    transition: transform .4s cubic-bezier(.175,.885,.32,1.275);
+    filter: drop-shadow(0 0 16px rgba(200,162,39,.4));
+    user-select: none;
+}
+.chest-icon.open { transform: scale(1.15) rotate(-5deg); }
+
+.chest-hint { color: var(--color-grey); font-size: .9rem; margin-top: .5rem; }
+
+.prize-inventory {
+    max-width: 600px;
+    margin: 0 auto;
+    display: none;
+    animation: fadeInUp .35s ease;
+}
+.prize-inventory.visible { display: block; }
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0);    }
+}
+
+.prize-list {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.prize-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .9rem 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+    transition: background var(--transition);
+}
+.prize-item:last-child { border-bottom: none; }
+.prize-item:hover { background: rgba(200,162,39,.05); }
+
+.prize-item-name { font-weight: 600; }
+.prize-item-value { color: var(--color-gold); font-family: var(--font-title); }
+
+/* --------------------------------------------------------------------------
+   Auth pages
+   -------------------------------------------------------------------------- */
+.auth-page { max-width: 420px; margin: 5rem auto; padding: 0 1.25rem; }
+
+/* --------------------------------------------------------------------------
+   Success / Order confirmation
+   -------------------------------------------------------------------------- */
+.success-page {
+    text-align: center;
+    padding: 5rem 1.25rem;
+}
+.success-icon { font-size: 5rem; display: block; margin-bottom: 1rem; }
+.success-page h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+.success-page p  { color: var(--color-grey); font-size: 1.1rem; }
+
+/* --------------------------------------------------------------------------
+   Order form wide layout
+   -------------------------------------------------------------------------- */
+.order-page {
+    max-width: 800px;
+    margin: 3rem auto;
+    padding: 0 1.25rem;
+}
+
+.service-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.service-option {
+    background: #111;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.2rem;
+    cursor: pointer;
+    transition: all var(--transition);
+    text-align: center;
+}
+.service-option:hover,
+.service-option.selected {
+    border-color: var(--color-gold);
+    background: rgba(200,162,39,.07);
+}
+.service-option .service-name  { font-family: var(--font-title); font-size: 1rem; }
+.service-option .service-price { color: var(--color-gold); font-size: .9rem; margin-top: .25rem; }
+
+/* --------------------------------------------------------------------------
+   BTC QR block
+   -------------------------------------------------------------------------- */
+.btc-block {
+    background: #111;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+}
+.btc-address {
+    word-break: break-all;
+    font-family: monospace;
+    font-size: .85rem;
+    background: #1a1a1a;
+    padding: .65rem;
+    border-radius: var(--radius);
+    margin: .75rem 0;
+    border: 1px solid var(--color-border);
+    color: var(--color-gold-light);
+}
+.btc-qr {
+    margin: 1rem auto;
+    width: 160px;
+    height: 160px;
+    background: #fff;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .75rem;
+    color: #333;
+    overflow: hidden;
+}
+.btc-qr img { width: 100%; height: 100%; object-fit: contain; }
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+.site-footer {
+    background: var(--color-bg-nav);
+    border-top: 2px solid var(--color-gold-dark);
+    padding: 3rem 1.25rem 0;
+    margin-top: auto;
+}
+
+.footer-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    padding-bottom: 2rem;
+}
+
+.footer-col h3,
+.footer-col h4 { font-size: 1rem; margin-bottom: .75rem; }
+
+.footer-col p,
+.footer-col ul li a {
+    color: var(--color-grey);
+    font-size: .88rem;
+}
+
+.footer-col ul li { margin-bottom: .35rem; }
+.footer-col ul li a:hover { color: var(--color-gold); }
+
+.footer-bottom {
+    text-align: center;
+    border-top: 1px solid var(--color-border);
+    padding: 1rem;
+    color: var(--color-grey);
+    font-size: .8rem;
+}
+
+/* --------------------------------------------------------------------------
+   Runes animation (canvas fallback text)
+   -------------------------------------------------------------------------- */
+.runes-overlay {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 600px) {
+    .hero-actions { flex-direction: column; align-items: center; }
+    .form-section { padding: 1.5rem; margin: 2rem auto; }
+    .pay-tabs { flex-direction: column; }
+    .game-board { padding: 1.25rem; }
+    .slot-reels { gap: .5rem; }
+    .slot-reel { width: 64px; height: 64px; font-size: 2rem; }
+}
