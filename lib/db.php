@@ -1,6 +1,12 @@
 <?php
 // lib/db.php — mysqli connection (call db() to get connection)
 
+// PHP 8.1+ changed the default mysqli error reporting mode to
+// MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT, which throws mysqli_sql_exception
+// on any connection or query failure. We manage all errors explicitly via
+// log_error() and return values, so disable exception mode globally here.
+mysqli_report(MYSQLI_REPORT_OFF);
+
 $_db_conn = null;
 
 function db(): mysqli {
@@ -32,9 +38,15 @@ function dbq(string $sql, string $types = '', ...$params) {
         return false;
     }
     if ($types && $params) {
-        $stmt->bind_param($types, ...$params);
+        if (!$stmt->bind_param($types, ...$params)) {
+            log_error('DB bind_param failed: ' . $stmt->error . ' | SQL: ' . $sql);
+            return false;
+        }
     }
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        log_error('DB execute failed: ' . $stmt->error . ' | SQL: ' . $sql);
+        return false;
+    }
     return $stmt;
 }
 
