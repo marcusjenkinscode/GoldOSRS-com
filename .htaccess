@@ -1,0 +1,76 @@
+# GoldOSRS — Apache .htaccess
+Options -Indexes -MultiViews
+
+# ── HTTPS Redirect ──────────────────────────────────────────────────────────
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# ── Remove .php extension ──────────────────────────────────────────────────
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+
+# ── Security Headers ────────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-XSS-Protection "1; mode=block"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  # Remove server signature
+  Header unset Server
+  Header unset X-Powered-By
+</IfModule>
+
+# ── Block access to sensitive files ─────────────────────────────────────────
+<FilesMatch "\.(env|sql|log|lock|json|git|htpasswd|ini|bak|sh)$">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+# Block access to lib/, cron/, data/, logs/ directories
+RewriteRule ^(lib|cron|data|logs|includes)/.*$ - [F,L]
+
+# ── Block bad bots / scanners ────────────────────────────────────────────────
+RewriteCond %{HTTP_USER_AGENT} (sqlmap|nikto|nmap|masscan|zgrab|python-requests/2\.6) [NC]
+RewriteRule .* - [F,L]
+
+# ── Block dangerous HTTP methods ─────────────────────────────────────────────
+RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK|DELETE|PUT|PATCH)
+RewriteRule .* - [F,L]
+
+# ── Limit request body (5MB) ─────────────────────────────────────────────────
+LimitRequestBody 5242880
+
+# ── PHP settings ─────────────────────────────────────────────────────────────
+<IfModule mod_php8.c>
+  php_flag display_errors Off
+  php_flag log_errors On
+  php_value error_log logs/php_error.log
+  php_value session.cookie_httponly 1
+  php_value session.cookie_secure 1
+  php_value session.use_strict_mode 1
+  php_value session.cookie_samesite Lax
+</IfModule>
+
+# ── Compression ───────────────────────────────────────────────────────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript text/plain application/json image/svg+xml
+</IfModule>
+
+# ── Browser caching ───────────────────────────────────────────────────────────
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType text/html "access plus 1 hour"
+</IfModule>
+
+# ── Custom error pages ────────────────────────────────────────────────────────
+ErrorDocument 404 /index.php
+ErrorDocument 403 /index.php

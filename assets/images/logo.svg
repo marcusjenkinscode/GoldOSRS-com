@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Shield body -->
+  <path d="M50 8 L88 22 L88 52 Q88 74 50 92 Q12 74 12 52 L12 22 Z"
+        fill="url(#shieldGrad)" stroke="#b8960c" stroke-width="2"/>
+  <!-- Shield inner border -->
+  <path d="M50 14 L82 26 L82 52 Q82 70 50 86 Q18 70 18 52 L18 26 Z"
+        fill="none" stroke="rgba(255,215,0,0.3)" stroke-width="1"/>
+  <!-- Sword vertical -->
+  <rect x="47" y="28" width="6" height="38" rx="1" fill="#ffd700"/>
+  <!-- Sword crossguard -->
+  <rect x="36" y="42" width="28" height="5" rx="2" fill="#ffd700"/>
+  <!-- Sword pommel -->
+  <ellipse cx="50" cy="68" rx="6" ry="5" fill="#ffd700"/>
+  <!-- Sword blade tip -->
+  <polygon points="47,28 53,28 50,18" fill="#ffe566"/>
+  <!-- Crown above -->
+  <g transform="translate(50,10)">
+    <polygon points="-14,0 -14,-8 -7,-4 0,-10 7,-4 14,-8 14,0" fill="#ffd700"/>
+    <circle cx="-10" cy="-6" r="2" fill="#ff8c00"/>
+    <circle cx="0" cy="-9" r="2.5" fill="#ff8c00"/>
+    <circle cx="10" cy="-6" r="2" fill="#ff8c00"/>
+  </g>
+  <!-- Gradient defs -->
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a26"/>
+      <stop offset="100%" style="stop-color:#0d0d18"/>
+    </linearGradient>
+  </defs>
+</svg>
