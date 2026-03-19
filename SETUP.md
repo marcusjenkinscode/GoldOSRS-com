@@ -1,16 +1,28 @@
-# GoldOSRS — cPanel Shared Hosting Setup Guide
+# GoldOSRS — Shared Hosting Setup Guide (PHP 8.4 · MySQL 8.0)
 
 ## Requirements
 
 | Requirement | Minimum | Recommended |
 |-------------|---------|-------------|
-| PHP         | 7.4     | 8.1+        |
-| MySQL       | 5.7     | 8.0+        |
+| PHP         | 8.1     | **8.4**     |
+| MySQL       | 8.0     | **8.0**     |
 | Apache      | 2.4     | 2.4         |
 | PHP Extensions | `mysqli`, `curl`, `json`, `mbstring` | same |
 
-> **⚠️ Before you start:** Check your PHP version in cPanel → "Select PHP Version" or "MultiPHP Manager".
-> The site requires **PHP 7.4 or higher**. If your host defaults to PHP 5.x or older 7.x, switch it first.
+> **⚠️ IONOS Users:** Select **PHP 8.4** in the IONOS Control Panel → Hosting → PHP tile.
+> MySQL 8.0 is the default database engine on IONOS — no action needed.
+
+---
+
+## IONOS Shared Hosting — Quick Start
+
+On IONOS, PHP runs as **FastCGI/PHP-FPM** (not as an Apache module). PHP settings are
+controlled by the included **`.user.ini`** file — upload it alongside `.htaccess`.
+
+1. Upload all files via FTP (enable hidden files so `.htaccess` and `.user.ini` are included)
+2. In the IONOS Control Panel → **Hosting** → **PHP tile** → select **PHP 8.4** → Save
+3. Wait 2–3 minutes for the PHP version change to propagate
+4. Continue with Step 2 (database) below
 
 ---
 
@@ -41,7 +53,7 @@ Alternatively, use FTP (FileZilla, Cyberduck, etc.) — hidden files are shown b
 4. Leave all settings at their defaults → click **Go**
 5. You should see "Import has been successfully finished"
 
-> **Note:** If you see any errors during import, make sure your MySQL version is 5.7 or higher.
+> **Note:** If you see any errors during import, make sure your MySQL version is 8.0 or higher.
 > The `patch_errors.sql` and `patch_features.sql` files are for upgrading an **existing** database only — do **not** import them on a fresh install.
 
 ---
@@ -86,17 +98,20 @@ The site writes log files and caches to two folders. Create them if they do not 
 
 ---
 
-## Step 5 — Verify .htaccess is Uploaded
+## Step 5 — Verify .htaccess and .user.ini are Uploaded
 
-The `.htaccess` file is **hidden** by default in File Manager.
+The `.htaccess` and `.user.ini` files are **hidden** by default in File Manager.
 
 1. In File Manager, click **Settings** (top right) → enable "Show Hidden Files (dotfiles)"
-2. Confirm `.htaccess` exists in `public_html/`
-3. If it is missing, re-upload it from the repository
+2. Confirm `.htaccess` **and** `.user.ini` both exist in `public_html/`
+3. If either is missing, re-upload it from the repository
 
 > **If you get a 500 error immediately after upload:** The `.htaccess` file is often the cause.
 > Temporarily rename it to `htaccess.bak` in File Manager. If the site loads (without clean URLs),
 > the `.htaccess` has a problem — see Troubleshooting below.
+>
+> **IONOS users:** Also ensure `.user.ini` is uploaded — this file configures PHP 8.4 settings for
+> IONOS FastCGI/PHP-FPM. PHP settings in `.htaccess` are ignored on IONOS (PHP runs as FastCGI).
 
 ---
 
@@ -196,6 +211,7 @@ public_html/
 ├── patch_errors.sql   ← Run only when upgrading an existing DB
 ├── patch_features.sql ← Run only when upgrading an existing DB
 ├── .htaccess          ← Security + URL rewriting (hidden file — must be uploaded)
+├── .user.ini          ← PHP 8.4 settings for IONOS FastCGI (hidden file — must be uploaded)
 ├── robots.txt
 ├── admin/             ← Admin panel (admin role required)
 │   ├── index.php      ← Dashboard
@@ -242,6 +258,7 @@ public_html/
 - [ ] `logs/` and `data/` folders created with `755` permissions
 - [ ] `db.sql` imported successfully with no errors
 - [ ] `.htaccess` uploaded (hidden file — must enable "Show Hidden Files" in File Manager)
+- [ ] `.user.ini` uploaded (hidden file — required for IONOS PHP-FPM settings)
 - [ ] Cron jobs set up (if using BTC payments or Discord)
 
 ---
@@ -252,11 +269,17 @@ public_html/
 
 This is usually one of three things:
 
-1. **Wrong PHP version** — Go to cPanel → MultiPHP Manager (or "Select PHP Version") and set PHP 7.4 or higher for your domain.
+1. **Wrong PHP version** — On IONOS: Control Panel → Hosting → PHP tile → select **PHP 8.4**. On cPanel: MultiPHP Manager → set PHP 8.1+.
 
-2. **`.htaccess` problem** — Rename `.htaccess` to `htaccess.bak` temporarily. If the site loads, the `.htaccess` is the issue. Check that Apache `mod_rewrite` is enabled (cPanel → "Apache Handlers" or ask your host).
+2. **`.htaccess` problem** — Rename `.htaccess` to `htaccess.bak` temporarily. If the site loads, the `.htaccess` is the issue. On IONOS, `LimitRequestBody` is removed from `.htaccess` in this release — make sure you have the latest version. Check that Apache `mod_rewrite` is enabled.
 
-3. **PHP extension missing** — Your host's PHP build may be missing `mysqli` or `curl`. Go to cPanel → "Select PHP Version" → "Extensions" and ensure `mysqli`, `curl`, `json`, and `mbstring` are ticked.
+3. **PHP extension missing** — Your host's PHP build may be missing `mysqli` or `curl`. On IONOS the standard extensions (`mysqli`, `curl`, `json`, `mbstring`) are enabled by default on PHP 8.4. On cPanel: "Select PHP Version" → "Extensions" and ensure they are ticked.
+
+### 500 Error on IONOS specifically
+
+- Make sure `.user.ini` was uploaded alongside `.htaccess` (it's a hidden file — enable "show dotfiles" in your FTP client)
+- IONOS uses PHP-FPM (FastCGI) — the PHP settings in `.user.ini` apply within ~5 minutes
+- Check IONOS Control Panel → Hosting → Logs for Apache error details
 
 ### Blank white page (no error shown)
 
