@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /cron/
+Disallow: /lib/
+Disallow: /data/
+Disallow: /logs/
+Disallow: /includes/
+
+Sitemap: https://goldosrs.com/sitemap.xml
