@@ -14,8 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = db_one('SELECT id, username FROM users WHERE email=?', 's', $email);
         if ($user) {
             $token   = bin2hex(random_bytes(32));
-            $expires = date('Y-m-d H:i:s', time() + 3600);
-            db_exec('UPDATE users SET reset_token=?, reset_expires=? WHERE id=?', 'ssi', $token, $expires, $user['id']);
+            db_exec('UPDATE users SET reset_token=?, reset_expires=DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE id=?', 'si', $token, $user['id']);
             $link = SITE_URL . '/reset.php?token=' . $token;
             send_email($email, 'Reset Your Password | GoldOSRS',
                 "<h2>⚔️ Password Reset</h2><p>Hi {$user['username']},</p><p>Click the link below to reset your password. It expires in 1 hour.</p><p><a href='{$link}'>{$link}</a></p><p>If you didn't request this, ignore this email.</p>");

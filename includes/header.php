@@ -72,6 +72,7 @@ $prices = get_prices();
       <li><a href="/buy-gold.php" class="nav-link<?= (basename($_SERVER['PHP_SELF']) === 'buy-gold.php') ? ' active' : '' ?>">Buy Gold</a></li>
       <li><a href="/sell-gold.php" class="nav-link<?= (basename($_SERVER['PHP_SELF']) === 'sell-gold.php') ? ' active' : '' ?>">Sell Gold</a></li>
       <li><a href="/gambling.php" class="nav-link<?= (basename($_SERVER['PHP_SELF']) === 'gambling.php') ? ' active' : '' ?>">Gambling</a></li>
+      <li><a href="/raffle.php" class="nav-link<?= (basename($_SERVER['PHP_SELF']) === 'raffle.php') ? ' active' : '' ?>">Raffle</a></li>
       <li><a href="/accounts.php" class="nav-link<?= (basename($_SERVER['PHP_SELF']) === 'accounts.php') ? ' active' : '' ?>">Accounts</a></li>
       <li><a href="/reviews.php" class="nav-link<?= (basename($_SERVER['PHP_SELF']) === 'reviews.php') ? ' active' : '' ?>">Reviews</a></li>
     </ul>
@@ -100,6 +101,7 @@ $prices = get_prices();
   <a href="/buy-gold.php" class="mob-link">🪙 Buy Gold</a>
   <a href="/sell-gold.php" class="mob-link">💰 Sell Gold</a>
   <a href="/gambling.php" class="mob-link">🎲 Gambling</a>
+  <a href="/raffle.php" class="mob-link">🎁 Raffle</a>
   <a href="/accounts.php" class="mob-link">👤 Accounts</a>
   <a href="/reviews.php" class="mob-link">⭐ Reviews</a>
   <a href="/faq.php" class="mob-link">❓ FAQ</a>

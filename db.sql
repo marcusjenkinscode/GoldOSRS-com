@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS `chat_messages` (
 CREATE TABLE IF NOT EXISTS `games` (
   `id`          INT          AUTO_INCREMENT PRIMARY KEY,
   `user_id`     INT          NOT NULL,
-  `game_type`   ENUM('dice','roulette','coinflip','blackjack','highlow') NOT NULL,
+  `game_type`   ENUM('dice','roulette','coinflip','blackjack','highlow','rs3dice') NOT NULL,
   `bet`         BIGINT       NOT NULL COMMENT 'GP millions',
   `multiplier`  DECIMAL(8,2) DEFAULT 1.00,
   `result`      VARCHAR(255) DEFAULT NULL,
@@ -192,6 +192,17 @@ CREATE TABLE IF NOT EXISTS `admin_log` (
   `created_at`  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ── Raffle Prizes ──────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS `raffle_prizes` (
+  `id`         INT           AUTO_INCREMENT PRIMARY KEY,
+  `name`       VARCHAR(100)  NOT NULL,
+  `value`      BIGINT        NOT NULL COMMENT 'Prize value in GP millions',
+  `added_date` DATE          NOT NULL DEFAULT (CURRENT_DATE),
+  `active`     TINYINT(1)    DEFAULT 1,
+  `created_at` TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+  KEY `idx_active` (`active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ════════════════════════════════════════════════════════════
 -- SEED DATA
 -- ════════════════════════════════════════════════════════════
@@ -257,6 +268,15 @@ VALUES
   ('admin', 'admin@goldosrs.com',
    '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
    'admin', 1);
+
+-- ── Seed Raffle Prizes ────────────────────────────────────────────────────────
+INSERT INTO `raffle_prizes` (`name`, `value`, `added_date`) VALUES
+  ('100M OSRS Gold',    100,  CURDATE()),
+  ('500M OSRS Gold',    500,  CURDATE()),
+  ('1B OSRS Gold',     1000,  CURDATE()),
+  ('Inferno Cape Service', 5000, CURDATE()),
+  ('500M RS3 Gold',     500,  CURDATE()),
+  ('Quest Cape Service', 2000, CURDATE());
 
 -- ── Seed Toasts ───────────────────────────────────────────────────────────────
 INSERT INTO `toasts` (`type`, `username`, `content`) VALUES
