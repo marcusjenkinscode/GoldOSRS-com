@@ -64,7 +64,7 @@
   if (!glow || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   let tx = window.innerWidth / 2, ty = window.innerHeight / 2;
   let cx = tx, cy = ty;
-  const LERP = 0.05;
+  const LERP = 0.08;
   document.addEventListener('mousemove', e => { tx = e.clientX; ty = e.clientY; });
   (function animate() {
     cx += (tx - cx) * LERP;
@@ -73,46 +73,67 @@
     glow.style.top  = cy + 'px';
     requestAnimationFrame(animate);
   })();
+
+  // Click burst — spray flame particles from click point
+  document.addEventListener('click', e => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    spawnFlames(e.clientX, e.clientY, 12);
+  });
 })();
 
-/* ── Spark effect on hover ──────────────────────────────────────────────────── */
-(function initSparks() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  document.addEventListener('mouseenter', e => {
-    const el = e.target;
-    if (!el.matches('button, .btn-primary, .btn-gold, .btn-register, .chat-fab, .card')) return;
-    spawnSparks(e.clientX, e.clientY, 6);
-  }, true);
-  function spawnSparks(x, y, n) {
-    for (let i = 0; i < n; i++) {
-      const s = document.createElement('div');
-      s.className = 'spark';
-      const angle = Math.random() * Math.PI * 2;
-      const dist  = 20 + Math.random() * 40;
-      s.style.cssText = `left:${x}px;top:${y}px;--sx:${Math.cos(angle)*dist}px;--sy:${Math.sin(angle)*dist}px`;
-      document.body.appendChild(s);
-      setTimeout(() => s.remove(), 800);
-    }
+/* ── Spark & Flame helpers ───────────────────────────────────────────────────── */
+function spawnSparks(x, y, n) {
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement('div');
+    s.className = 'spark';
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = 20 + Math.random() * 50;
+    s.style.cssText = `left:${x}px;top:${y}px;--sx:${Math.cos(angle)*dist}px;--sy:${Math.sin(angle)*dist}px`;
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 900);
   }
-})();
+}
+function spawnFlames(x, y, n) {
+  for (let i = 0; i < n; i++) {
+    const f = document.createElement('div');
+    f.className = 'flame-burst';
+    const angle  = -Math.PI/2 + (Math.random() - 0.5) * Math.PI * 1.4;
+    const dist   = 10 + Math.random() * 30;
+    const rotate = (Math.random() - 0.5) * 60 + 'deg';
+    f.style.cssText = `left:${x}px;top:${y}px;--fx:${Math.cos(angle)*dist}px;--fy:${Math.sin(angle)*dist}px;--fr:${rotate}`;
+    document.body.appendChild(f);
+    setTimeout(() => f.remove(), 700);
+  }
+  spawnSparks(x, y, 6);
+}
 
 /* ── Toast Notifications ────────────────────────────────────────────────────── */
 const Toasts = {
   container: null,
+  enabled: true,
+  duration: 5000,
   init() {
     this.container = document.getElementById('toast-container');
+    // Read server-side settings if injected
+    if (typeof TOAST_SETTINGS !== 'undefined') {
+      this.enabled  = TOAST_SETTINGS.enabled !== false;
+      this.duration = parseInt(TOAST_SETTINGS.duration) || 5000;
+    }
+    if (!this.enabled) return;
     this.fetchAndShow();
     setInterval(() => this.fetchAndShow(), 30000);
   },
-  show(text, duration = 5000) {
-    if (!this.container) return;
+  show(text, duration) {
+    if (!this.enabled || !this.container) return;
+    const d = duration || this.duration;
     const t = document.createElement('div');
     t.className = 'toast';
     t.textContent = text;
     this.container.appendChild(t);
-    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, duration);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, d);
   },
   async fetchAndShow() {
+    if (!this.enabled) return;
     try {
       const r = await fetch('/api/toasts.php');
       const d = await r.json();
@@ -356,4 +377,34 @@ document.addEventListener('DOMContentLoaded', () => {
   initCalculator();
   Chat.init();
   Toasts.init();
+  initScrollReveal();
+  initPageEntrance();
 });
+
+/* ── Scroll Reveal ──────────────────────────────────────────────────────────── */
+function initScrollReveal() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+  // Auto-tag common content blocks for reveal
+  document.querySelectorAll('.card, .form-wrap, .section-header, .stat-card, .review-card, .raffle-pool-banner, .referral-block').forEach(el => {
+    if (!el.classList.contains('scroll-reveal')) {
+      el.classList.add('scroll-reveal');
+      obs.observe(el);
+    }
+  });
+}
+
+/* ── Page entrance animation ────────────────────────────────────────────────── */
+function initPageEntrance() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const main = document.querySelector('main');
+  if (main) main.classList.add('page-enter');
+}

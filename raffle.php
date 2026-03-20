@@ -67,23 +67,69 @@ require_once __DIR__ . '/includes/header.php';
     <!-- Enter Raffle CTA -->
     <div class="text-center mt-40">
       <?php if (is_logged_in()): ?>
-        <div class="card" style="max-width:480px;margin:0 auto;text-align:center">
-          <div style="font-size:40px;margin-bottom:12px">🎟️</div>
-          <h3>Enter This Week's Draw</h3>
-          <p class="text-muted" style="margin:12px 0 20px">Place an order of any amount to earn raffle tickets automatically. 1 ticket per order!</p>
-          <a href="/#order" class="btn-primary">⚔️ Place an Order</a>
+        <?php
+        $user_tickets = (int)(db_one('SELECT COALESCE(SUM(tickets),0) AS t FROM raffle_entries WHERE user_id=?', 'i', current_user()['id'])['t'] ?? 0);
+        ?>
+        <div class="grid-3" style="max-width:800px;margin:0 auto">
+          <div class="card" style="text-align:center">
+            <div style="font-size:36px;margin-bottom:10px">🎟️</div>
+            <h3>Earn Tickets Automatically</h3>
+            <p class="text-muted" style="margin:10px 0 16px;font-size:13px">Every order you place automatically earns raffle tickets — the more you spend, the more tickets!</p>
+            <div style="font-size:12px;color:var(--text-muted);text-align:left;padding:0 8px">
+              <div style="padding:4px 0;border-bottom:1px solid var(--border)">🪙 Under $10 → 1 ticket</div>
+              <div style="padding:4px 0;border-bottom:1px solid var(--border)">💰 $10–$49 → 3 tickets</div>
+              <div style="padding:4px 0;border-bottom:1px solid var(--border)">💎 $50–$99 → 8 tickets</div>
+              <div style="padding:4px 0">👑 $100+ → 20 tickets</div>
+            </div>
+            <a href="/#order" class="btn-gold mt-16" style="width:100%;display:block">⚔️ Place an Order</a>
+          </div>
+          <div class="card" style="text-align:center">
+            <div style="font-size:36px;margin-bottom:10px">🏆</div>
+            <h3>Your Tickets</h3>
+            <div style="font-family:'Cinzel Decorative',serif;font-size:48px;color:var(--gold);margin:12px 0"><?= $user_tickets ?></div>
+            <p class="text-muted" style="font-size:13px;margin-bottom:16px">Tickets entered this draw</p>
+            <?php if ($user_tickets > 0): ?><div class="promo-badge">✅ You're in this week's draw!</div>
+            <?php else: ?><p class="text-muted" style="font-size:12px">Place an order or buy tickets to enter</p>
+            <?php endif; ?>
+          </div>
+          <div class="card" style="text-align:center">
+            <div style="font-size:36px;margin-bottom:10px">💫</div>
+            <h3>Buy Extra Tickets</h3>
+            <p class="text-muted" style="font-size:13px;margin:10px 0 16px">Purchase additional raffle tickets using your GP balance.</p>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+              <button class="ticket-option" onclick="buyTickets(1,5)" style="display:flex;justify-content:space-between;padding:10px 14px">
+                <span><strong class="text-gold">1 ticket</strong></span><span class="text-muted" style="font-size:12px">5M GP</span>
+              </button>
+              <button class="ticket-option" onclick="buyTickets(5,20)" style="display:flex;justify-content:space-between;padding:10px 14px">
+                <span><strong class="text-gold">5 tickets</strong></span><span class="text-muted" style="font-size:12px">20M GP <span style="color:#27ae60;font-size:10px">save 5M</span></span>
+              </button>
+              <button class="ticket-option" onclick="buyTickets(15,50)" style="display:flex;justify-content:space-between;padding:10px 14px">
+                <span><strong class="text-gold">15 tickets</strong></span><span class="text-muted" style="font-size:12px">50M GP <span style="color:#27ae60;font-size:10px">best value</span></span>
+              </button>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted)">Balance: <?= fmt_gp((int)current_user()['balance_osrs']) ?></div>
+          </div>
         </div>
       <?php else: ?>
         <div class="card" style="max-width:480px;margin:0 auto;text-align:center">
           <div style="font-size:40px;margin-bottom:12px">🎟️</div>
           <h3>Login to Enter the Raffle</h3>
-          <p class="text-muted" style="margin:12px 0 20px">Create an account and place an order to earn raffle tickets!</p>
+          <p class="text-muted" style="margin:12px 0 20px">Create an account and place an order to earn raffle tickets automatically!</p>
           <div style="display:flex;gap:10px;justify-content:center">
             <a href="/login.php" class="btn-primary">Login</a>
             <a href="/register.php" class="btn-secondary">Register</a>
           </div>
         </div>
       <?php endif; ?>
+    </div>
+
+    <!-- Weekly Tournament -->
+    <div class="card mt-32" style="max-width:700px;margin:32px auto;text-align:center">
+      <div style="font-size:36px;margin-bottom:12px">🏆</div>
+      <h3 style="font-family:'Cinzel Decorative',serif;color:var(--gold);margin-bottom:8px">Weekly Tournament</h3>
+      <p class="text-muted" style="font-size:14px;margin-bottom:16px;line-height:1.6">New tournament every <strong style="color:var(--gold)">Friday</strong>. Rules and events are announced in our Discord server.<br>
+      Prizes are <strong style="color:var(--gold)">tiered</strong>: 🥇 1st Place &nbsp;·&nbsp; 🥈 2nd Place &nbsp;·&nbsp; 🥉 3rd Place</p>
+      <a href="https://discord.gg/n9HP7GH2e3" target="_blank" rel="noopener" class="btn-gold">🎮 Join Discord for Rules &amp; Events</a>
     </div>
 
   </div>
@@ -150,5 +196,48 @@ function toggleInventory() {
   }
 }
 </script>
+
+<?php if (is_logged_in()): ?>
+<!-- Buy tickets modal -->
+<div id="ticketModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:60000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;max-width:380px;width:100%;padding:28px;text-align:center">
+    <div style="font-size:40px;margin-bottom:12px">🎟️</div>
+    <h3 class="text-gold" id="ticketModalTitle">Buy Tickets</h3>
+    <p class="text-muted" id="ticketModalDesc" style="margin:10px 0 20px;font-size:14px"></p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button id="ticketConfirm" class="btn-primary">Confirm Purchase</button>
+      <button onclick="document.getElementById('ticketModal').style.display='none'" class="btn-secondary">Cancel</button>
+    </div>
+    <div id="ticketResult" style="margin-top:16px;font-size:14px"></div>
+  </div>
+</div>
+<script>
+const RAFFLE_CSRF = '<?= h(csrf_token()) ?>';
+function buyTickets(qty, costM) {
+  document.getElementById('ticketModalTitle').textContent = `Buy ${qty} ticket${qty>1?'s':''}`;
+  document.getElementById('ticketModalDesc').textContent  = `Cost: ${costM}M OSRS GP`;
+  document.getElementById('ticketResult').textContent     = '';
+  document.getElementById('ticketModal').style.display    = 'flex';
+  document.getElementById('ticketConfirm').onclick = async () => {
+    const btn = document.getElementById('ticketConfirm');
+    btn.disabled = true; btn.textContent = 'Processing…';
+    const fd = new FormData();
+    fd.append('csrf', RAFFLE_CSRF); fd.append('qty', qty); fd.append('cost_m', costM);
+    try {
+      const r = await fetch('/api/raffle_buy.php', { method:'POST', body: fd });
+      const d = await r.json();
+      const res = document.getElementById('ticketResult');
+      res.style.color = d.success ? '#27ae60' : '#e74c3c';
+      res.textContent = d.message || d.error || 'Error';
+      if (d.success) setTimeout(() => { document.getElementById('ticketModal').style.display='none'; location.reload(); }, 1500);
+    } catch(e) {
+      document.getElementById('ticketResult').textContent = 'Request failed. Please try again.';
+    }
+    const btn2 = document.getElementById('ticketConfirm');
+    btn2.disabled = false; btn2.textContent = 'Confirm Purchase';
+  };
+}
+</script>
+<?php endif; ?>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

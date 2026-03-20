@@ -7,17 +7,31 @@ function bootstrap(): void {
     require_once __DIR__ . '/db.php';
     require_once __DIR__ . '/electrum.php';
 
-    if (!is_dir(LOG_PATH)) mkdir(LOG_PATH, 0755, true);
-    if (!is_dir(DATA_PATH)) mkdir(DATA_PATH, 0755, true);
+    if (!is_dir(LOG_PATH) && !@mkdir(LOG_PATH, 0755, true)) {
+        error_log('GoldOSRS: could not create LOG_PATH ' . LOG_PATH);
+    }
+    if (!is_dir(DATA_PATH) && !@mkdir(DATA_PATH, 0755, true)) {
+        error_log('GoldOSRS: could not create DATA_PATH ' . DATA_PATH);
+    }
 
     session_name(SESSION_NAME);
     if (session_status() === PHP_SESSION_NONE) {
-        session_start();
+        // PHP-FPM on IONOS: suppress the "Cannot send session cookie — headers
+        // already sent" / cookie_secure warning that fires when the SSL is
+        // terminated upstream by the load balancer (the Apache process sees HTTP
+        // internally). Suppressing here prevents a spurious E_WARNING that can
+        // propagate as a 500 on some FastCGI configurations.
+        if (!@session_start()) {
+            error_log('GoldOSRS: session_start() failed');
+        }
     }
 
-    // Regenerate session ID periodically (prevent fixation)
+    // Regenerate session ID on first visit (prevent session fixation)
     if (empty($_SESSION['_init'])) {
-        session_regenerate_id(true);
+        if (!@session_regenerate_id(true)) {
+            // Non-fatal: log but continue — the session is still usable
+            error_log('GoldOSRS: session_regenerate_id() failed');
+        }
         $_SESSION['_init'] = time();
     }
 }
@@ -206,12 +220,17 @@ function email_payment_confirmed(string $to, string $rsn, string $ref): void {
 // ── Logging ───────────────────────────────────────────────────────────────────
 function log_error(string $msg): void {
     $line = '[' . date('Y-m-d H:i:s') . '] ERROR: ' . $msg . "\n";
-    file_put_contents(LOG_PATH . '/error.log', $line, FILE_APPEND | LOCK_EX);
+    if (!@file_put_contents(LOG_PATH . '/error.log', $line, FILE_APPEND | LOCK_EX)) {
+        // Fallback to the system error log if the file can't be written
+        error_log('GoldOSRS ERROR: ' . $msg);
+    }
 }
 
 function log_info(string $msg): void {
     $line = '[' . date('Y-m-d H:i:s') . '] INFO: ' . $msg . "\n";
-    file_put_contents(LOG_PATH . '/app.log', $line, FILE_APPEND | LOCK_EX);
+    if (!@file_put_contents(LOG_PATH . '/app.log', $line, FILE_APPEND | LOCK_EX)) {
+        error_log('GoldOSRS INFO: ' . $msg);
+    }
 }
 
 function admin_log(int $admin_id, string $action, string $target_type = '', int $target_id = 0, string $details = ''): void {

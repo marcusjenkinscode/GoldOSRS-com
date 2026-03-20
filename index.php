@@ -62,6 +62,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                 discord_send("🛒 **New Order #{$order_ref}**\n⚔️ Service: {$service_type}\n👤 RSN: {$rsn}\n💰 Amount: " . ($amount > 0 ? fmt_gp($amount) : 'N/A') . "\n💵 USD: \${$price_usd}\n📧 Email: {$email}\n💳 Payment: {$payment_method}");
                 // Real toast
                 db_insert("INSERT INTO toasts (type, content) VALUES ('real', ?)", 's', "🪙 Someone just ordered {$service_type} — {$rsn}");
+
+                // Award raffle tickets based on order value
+                if ($user_id && $price_usd > 0) {
+                    $tickets = 1;
+                    if ($price_usd >= 100) $tickets = 20;
+                    elseif ($price_usd >= 50)  $tickets = 8;
+                    elseif ($price_usd >= 10)  $tickets = 3;
+                    $existing_entry = db_one('SELECT id FROM raffle_entries WHERE user_id=? LIMIT 1', 'i', $user_id);
+                    if ($existing_entry) {
+                        db_exec('UPDATE raffle_entries SET tickets=tickets+? WHERE id=?', 'ii', $tickets, $existing_entry['id']);
+                    } else {
+                        db_insert('INSERT INTO raffle_entries (user_id, tickets, draw_date) VALUES (?,?,DATE(NOW()))', 'ii', $user_id, $tickets);
+                    }
+                }
+
                 $order_success = true;
                 // If crypto payment, redirect to payment page
                 if ($payment_method === 'crypto' && $price_usd > 0) {
@@ -181,7 +196,7 @@ require_once __DIR__ . '/includes/header.php';
         <?= csrf_field() ?>
         <div class="form-group">
           <label>Service Type *</label>
-          <select name="service_type" required>
+          <select name="service_type" id="orderServiceType" required>
             <option value="">— Select a service —</option>
             <optgroup label="Buy Gold"><option>OSRS Gold — Crypto</option><option>OSRS Gold — Card</option><option>RS3 Gold — Crypto</option><option>RS3 Gold — Card</option><option>Bulk OSRS Gold (1B+)</option><option>Bulk RS3 Gold (5B+)</option></optgroup>
             <optgroup label="Gold Swap"><option>Gold Swap — OSRS → RS3</option><option>Gold Swap — RS3 → OSRS</option><option>Bulk Gold Swap</option></optgroup>
@@ -280,6 +295,38 @@ require_once __DIR__ . '/includes/header.php';
 <script>
 // Pass prices to JS calculator
 window.GOLD_PRICES = <?= json_encode($prices) ?>;
+
+<?php
+// Inject active promo code for JS auto-fill
+$promo_active = get_config('promo_active','0');
+$promo_code   = get_config('promo_code','');
+?>
+<?php if ($promo_active === '1' && $promo_code): ?>
+// Auto-fill promo code if offer is active
+(function() {
+  const promoInput = document.querySelector('[name="promo"]');
+  if (promoInput && !promoInput.value) promoInput.value = '<?= h($promo_code) ?>';
+})();
+<?php endif; ?>
+
+// Apply sessionStorage prefill from services page
+(function() {
+  const svc = sessionStorage.getItem('prefill_service');
+  if (!svc) return;
+  sessionStorage.removeItem('prefill_service');
+  const sel = document.getElementById('orderServiceType');
+  if (!sel) return;
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].text === svc || sel.options[i].value === svc) {
+      sel.value = sel.options[i].value;
+      sel.dispatchEvent(new Event('change'));
+      break;
+    }
+  }
+  // Scroll to order form
+  const form = document.getElementById('order');
+  if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+})();
 </script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

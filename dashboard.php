@@ -68,6 +68,27 @@ require_once __DIR__ . '/includes/header.php';
       </div>
     </div>
 
+    <!-- Referral Program (prominent) -->
+    <div class="referral-block mt-24">
+      <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+        <div style="font-size:36px">🎁</div>
+        <div style="flex:1;min-width:200px">
+          <h3>💰 Multi-Tier Referral Program</h3>
+          <p class="text-muted" style="font-size:13px;margin:6px 0 12px;line-height:1.6">
+            Earn GP for every friend you refer — and every person <em>they</em> refer! Share on social media to earn even more.<br>
+            <strong style="color:var(--gold)">100k OSRS</strong> or <strong style="color:var(--amber)">500k RS3</strong> per verified social share (cap: 600k OSRS / 3M RS3 per month).
+          </p>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div style="background:rgba(255,215,0,0.06);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px">
+              Your code: <strong class="text-gold" style="font-family:'Cinzel',serif;letter-spacing:2px"><?= h($user['referral_code'] ?? 'N/A') ?></strong>
+              <button data-copy="<?= h($user['referral_code'] ?? '') ?>" style="margin-left:8px;padding:3px 8px;background:rgba(255,215,0,0.1);border:1px solid var(--border);border-radius:4px;color:var(--gold);font-size:11px;cursor:pointer;font-family:'Cinzel',serif">Copy</button>
+            </div>
+            <button onclick="shareReferral()" class="btn-gold" style="padding:8px 16px;font-size:12px">📤 Share &amp; Earn</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Quick actions -->
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px">
       <a href="/#order" class="btn-primary">⚔️ New Order</a>
@@ -123,4 +144,16 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 </div>
 </main>
+<script>
+function shareReferral() {
+  const code = '<?= h($user['referral_code'] ?? '') ?>';
+  const url  = '<?= SITE_URL ?>/register.php?ref=' + encodeURIComponent(code);
+  const text = '🎮 Join GoldOSRS — The Realm\'s finest OSRS & RS3 marketplace! Use my referral code ' + code + ' to sign up: ' + url;
+  if (navigator.share) {
+    navigator.share({ title: 'GoldOSRS', text: text, url: url }).catch(() => {});
+  } else {
+    navigator.clipboard?.writeText(url).then(() => alert('Referral link copied to clipboard!\n\n' + url));
+  }
+}
+</script>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

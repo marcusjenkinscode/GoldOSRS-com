@@ -47,7 +47,7 @@ body {
   position: absolute;
   top: 0;
   font-size: clamp(18px, 3vw, 40px);
-  color: rgba(255,215,0,0.07);
+  color: rgba(255,215,0,0.088);
   animation: runeFall linear infinite;
   will-change: transform;
   user-select: none;
@@ -55,7 +55,7 @@ body {
 @keyframes runeFall {
   0%   { transform: translateY(-120px); opacity: 0; }
   4%   { opacity: 1; }
-  92%  { opacity: 0.07; }
+  92%  { opacity: 0.088; }
   100% { transform: translateY(110vh); opacity: 0; }
 }
 
@@ -511,29 +511,148 @@ main, .page-content { padding-top: var(--nav-h); }
 
 /* ── Torch glow ────────────────────────────────────────── */
 .torch-glow {
-  position: fixed; width: 500px; height: 500px;
+  position: fixed; width: 700px; height: 700px;
   border-radius: 50%; pointer-events: none; z-index: 1;
   background: radial-gradient(circle at center,
-    rgba(255,140,0,0.06) 0%,
-    rgba(255,140,0,0.03) 25%,
-    transparent 65%);
+    rgba(255,160,0,0.14) 0%,
+    rgba(255,120,0,0.08) 20%,
+    rgba(255,80,0,0.04)  45%,
+    transparent 68%);
   transform: translate(-50%,-50%);
-  transition: left 0.15s ease-out, top 0.15s ease-out;
+  transition: left 0.08s ease-out, top 0.08s ease-out;
   will-change: left, top;
 }
 
-/* ── Sparks ────────────────────────────────────────────── */
+/* ── Sparks / click flames ──────────────────────────────── */
 .spark {
-  position: fixed; width: 4px; height: 4px; border-radius: 50%;
+  position: fixed; width: 5px; height: 5px; border-radius: 50%;
   background: var(--gold); pointer-events: none; z-index: 2;
-  animation: sparkFly 0.8s ease-out forwards;
+  animation: sparkFly 0.9s ease-out forwards;
+}
+.flame-burst {
+  position: fixed; pointer-events: none; z-index: 2;
+  width: 8px; height: 18px; border-radius: 50% 50% 20% 20%;
+  background: linear-gradient(to top, #ff4400, #ffcc00);
+  transform-origin: bottom center;
+  animation: flamePop 0.7s ease-out forwards;
 }
 @keyframes sparkFly {
   0%   { opacity: 1; transform: translate(0,0) scale(1); }
   100% { opacity: 0; transform: translate(var(--sx), var(--sy)) scale(0.2); }
 }
+@keyframes flamePop {
+  0%   { opacity: 1; transform: translate(var(--fx),var(--fy)) scale(1) rotate(var(--fr)); }
+  60%  { opacity: 0.8; }
+  100% { opacity: 0; transform: translate(var(--fx),calc(var(--fy) - 60px)) scale(0.3) rotate(calc(var(--fr) + 30deg)); }
+}
 
-/* ── Feats bar ─────────────────────────────────────────── */
+/* ── Universal hover glow ───────────────────────────────── */
+a:not(.nav-link):not(.mob-link):not(.footer-col a):not(.dash-nav a):not(.admin-nav a):hover,
+button:not(.chat-close):not(.nav-burger):not(.quick-reply):hover,
+.card:hover,
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-gold:hover,
+.btn-register:hover {
+  filter: drop-shadow(0 0 6px rgba(255,215,0,0.25));
+}
+
+/* ── Scroll entrance animations ─────────────────────────── */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.scroll-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Page entrance ───────────────────────────────────────── */
+.page-enter {
+  animation: pageEnter 0.45s ease forwards;
+}
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Admin chat sessions sidebar (mobile) ───────────────── */
+.admin-sessions-panel {
+  position: fixed; top: var(--nav-h); left: 0; bottom: 0;
+  width: 300px; background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  z-index: 45000;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  display: flex; flex-direction: column;
+}
+.admin-sessions-panel.open { transform: translateX(0); }
+.admin-sessions-toggle {
+  display: none;
+  position: fixed; bottom: 88px; left: 16px;
+  z-index: 46000;
+  background: var(--gold); color: #000;
+  border: none; border-radius: 50%;
+  width: 48px; height: 48px; font-size: 22px;
+  cursor: pointer; box-shadow: 0 4px 16px rgba(255,215,0,0.4);
+  align-items: center; justify-content: center;
+}
+@media (max-width: 900px) {
+  .admin-sessions-toggle { display: flex; }
+}
+
+/* ── BTC address reveal ──────────────────────────────────── */
+.btc-address-reveal {
+  animation: btcReveal 0.5s cubic-bezier(0.34,1.56,.64,1) forwards;
+}
+@keyframes btcReveal {
+  0%   { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* ── Pagination ──────────────────────────────────────────── */
+.pagination {
+  display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+  margin-top: 20px;
+}
+.pagination a, .pagination span {
+  padding: 7px 13px; border-radius: var(--radius);
+  font-size: 13px; font-family: 'Cinzel', serif;
+  border: 1px solid var(--border); text-decoration: none; color: var(--text-muted);
+  transition: all 0.2s;
+}
+.pagination a:hover { border-color: var(--gold); color: var(--gold); }
+.pagination .current { border-color: var(--gold); color: var(--gold); background: rgba(255,215,0,0.08); font-weight: 700; }
+
+/* ── Raffle ticket card ──────────────────────────────────── */
+.ticket-option {
+  border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.ticket-option:hover, .ticket-option.selected {
+  border-color: var(--gold); background: rgba(255,215,0,0.06);
+}
+.ticket-option .ticket-count {
+  font-family: 'Cinzel Decorative', serif; font-size: 28px; color: var(--gold); display: block; margin-bottom: 4px;
+}
+
+/* ── Referral promo block ────────────────────────────────── */
+.referral-block {
+  background: linear-gradient(135deg, rgba(255,215,0,0.07), rgba(255,140,0,0.04));
+  border: 1px solid var(--border); border-radius: 12px; padding: 24px;
+  margin-bottom: 24px;
+}
+.referral-block h3 { color: var(--gold); font-family: 'Cinzel', serif; margin-bottom: 8px; }
+
+/* ── Promo badge ─────────────────────────────────────────── */
+.promo-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 10px;
+  background: rgba(39,174,96,0.15); color: #27ae60;
+  border: 1px solid rgba(39,174,96,0.3);
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+}
 .feats-bar {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
   gap: 1px; background: var(--border); border-top: 1px solid var(--border);

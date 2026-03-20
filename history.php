@@ -4,8 +4,25 @@ require_once __DIR__ . '/lib/functions.php';
 bootstrap();
 $user = require_login();
 $page_title = 'Order History | GoldOSRS';
-$orders = db_all('SELECT * FROM orders WHERE user_id=? ORDER BY created_at DESC', 'i', $user['id']);
-$games  = db_all('SELECT * FROM games  WHERE user_id=? ORDER BY created_at DESC LIMIT 50', 'i', $user['id']);
+
+// Pagination
+$per_page     = 15;
+$page         = max(1, (int)get('page', '1'));
+$offset       = ($page - 1) * $per_page;
+$total_orders = (int)(db_one('SELECT COUNT(*) AS c FROM orders WHERE user_id=?', 'i', $user['id'])['c'] ?? 0);
+$total_pages  = max(1, (int)ceil($total_orders / $per_page));
+$page         = min($page, $total_pages);
+$offset       = ($page - 1) * $per_page;
+$orders       = db_all('SELECT * FROM orders WHERE user_id=? ORDER BY created_at DESC LIMIT ? OFFSET ?', 'iii', $user['id'], $per_page, $offset);
+
+$game_per_page   = 15;
+$game_page       = max(1, (int)get('gpage', '1'));
+$total_games_cnt = (int)(db_one('SELECT COUNT(*) AS c FROM games WHERE user_id=?', 'i', $user['id'])['c'] ?? 0);
+$total_game_pages = max(1, (int)ceil($total_games_cnt / $game_per_page));
+$game_page        = min($game_page, $total_game_pages);
+$game_offset      = ($game_page - 1) * $game_per_page;
+$games            = db_all('SELECT * FROM games WHERE user_id=? ORDER BY created_at DESC LIMIT ? OFFSET ?', 'iii', $user['id'], $game_per_page, $game_offset);
+
 require_once __DIR__ . '/includes/header.php';
 ?>
 <main class="page-content">
@@ -24,10 +41,10 @@ require_once __DIR__ . '/includes/header.php';
   </aside>
   <div class="dash-main">
     <div class="dash-header"><h1>📋 Order History</h1></div>
-    <?php if (empty($orders)): ?>
+    <?php if (empty($orders) && $page === 1): ?>
     <div class="card text-center text-muted">No orders yet. <a href="/#order" class="text-gold">Place your first order!</a></div>
     <?php else: ?>
-    <div style="overflow-x:auto;margin-bottom:32px">
+    <div style="overflow-x:auto;margin-bottom:12px">
     <table class="data-table">
       <thead><tr><th>Ref</th><th>Service</th><th>RSN</th><th>Amount</th><th>Price</th><th>Status</th><th>Date</th></tr></thead>
       <tbody>
@@ -45,11 +62,22 @@ require_once __DIR__ . '/includes/header.php';
       </tbody>
     </table>
     </div>
+    <?php if ($total_pages > 1): ?>
+    <nav class="pagination" aria-label="Order pages">
+      <?php if ($page > 1): ?><a href="?page=<?= $page-1 ?>">&laquo;</a><?php endif; ?>
+      <?php for ($p = max(1,$page-2); $p <= min($total_pages,$page+2); $p++): ?>
+        <?php if ($p === $page): ?><span class="current"><?= $p ?></span>
+        <?php else: ?><a href="?page=<?= $p ?>"><?= $p ?></a><?php endif; ?>
+      <?php endfor; ?>
+      <?php if ($page < $total_pages): ?><a href="?page=<?= $page+1 ?>">&raquo;</a><?php endif; ?>
+    </nav>
+    <p class="text-muted text-center mt-8" style="font-size:12px">Page <?= $page ?> of <?= $total_pages ?> · <?= $total_orders ?> orders total</p>
+    <?php endif; ?>
     <?php endif; ?>
 
-    <?php if (!empty($games)): ?>
-    <h2 class="text-gold mb-16" style="font-size:18px">🎲 Gambling History</h2>
-    <div style="overflow-x:auto">
+    <?php if (!empty($games) || $game_page > 1): ?>
+    <h2 class="text-gold mb-16 mt-32" style="font-size:18px">🎲 Gambling History</h2>
+    <div style="overflow-x:auto;margin-bottom:12px">
     <table class="data-table">
       <thead><tr><th>Game</th><th>Bet</th><th>Result</th><th>Payout</th><th>Date</th><th>Verify</th></tr></thead>
       <tbody>
@@ -61,7 +89,7 @@ require_once __DIR__ . '/includes/header.php';
           <td class="<?= $g['won']?'feed-won':'feed-lost' ?>"><?= $g['won']?'+'.fmt_gp((int)$g['win_amount']):'-'.fmt_gp((int)$g['bet']) ?></td>
           <td class="text-muted" style="font-size:12px"><?= date('d M H:i', strtotime($g['created_at'])) ?></td>
           <td>
-            <?php if ($g['server_seed']): ?>
+            <?php if (!empty($g['server_seed'])): ?>
             <button class="btn-secondary" style="padding:3px 8px;font-size:11px" onclick="showSeeds(<?= $g['id'] ?>,`<?= h($g['server_seed']) ?>`,`<?= h($g['server_hash']) ?>`,`<?= h($g['client_seed']) ?>`,<?= $g['nonce'] ?>)">Verify</button>
             <?php endif; ?>
           </td>
@@ -70,6 +98,17 @@ require_once __DIR__ . '/includes/header.php';
       </tbody>
     </table>
     </div>
+    <?php if ($total_game_pages > 1): ?>
+    <nav class="pagination" aria-label="Game pages">
+      <?php if ($game_page > 1): ?><a href="?gpage=<?= $game_page-1 ?>&page=<?= $page ?>">&laquo;</a><?php endif; ?>
+      <?php for ($p = max(1,$game_page-2); $p <= min($total_game_pages,$game_page+2); $p++): ?>
+        <?php if ($p === $game_page): ?><span class="current"><?= $p ?></span>
+        <?php else: ?><a href="?gpage=<?= $p ?>&page=<?= $page ?>"><?= $p ?></a><?php endif; ?>
+      <?php endfor; ?>
+      <?php if ($game_page < $total_game_pages): ?><a href="?gpage=<?= $game_page+1 ?>&page=<?= $page ?>">&raquo;</a><?php endif; ?>
+    </nav>
+    <p class="text-muted text-center mt-8" style="font-size:12px">Page <?= $game_page ?> of <?= $total_game_pages ?> · <?= $total_games_cnt ?> games total</p>
+    <?php endif; ?>
     <?php endif; ?>
   </div>
 </div>

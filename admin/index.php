@@ -31,6 +31,7 @@ require_once __DIR__ . '/../includes/header.php';
       <a href="/admin/users.php">👥 Users</a>
       <a href="/admin/gambling.php">🎲 Gambling</a>
       <a href="/admin/prices.php">💰 Prices</a>
+      <a href="/admin/settings.php">⚙️ Settings</a>
       <a href="/">🌐 View Site</a>
       <a href="/logout.php" style="color:var(--red)">🚪 Logout</a>
     </nav>

@@ -2,8 +2,12 @@
 Options -Indexes
 
 # ── HTTPS Redirect ──────────────────────────────────────────────────────────
+# IONOS (and other hosts) terminate SSL at the load balancer, so %{HTTPS} is
+# always "off" from Apache's perspective even on genuine HTTPS requests.
+# We also check X-Forwarded-Proto to avoid an infinite redirect loop.
 RewriteEngine On
 RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # ── Remove .php extension ──────────────────────────────────────────────────
