@@ -51,7 +51,6 @@ require_once __DIR__ . '/includes/header.php';
     <div id="osrsGames">
     <div class="grid-3">
       <div class="card game-card" onclick="<?= $user?'openGame(\'dice\')':'window.location=\'/login.php\'' ?>">
-
         <div class="card-icon">🎲</div>
         <h3>Dice Duel</h3>
         <p>Roll dice — pick your target. Higher target = lower payout. Simple, fast, fair.</p>
