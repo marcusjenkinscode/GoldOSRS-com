@@ -136,26 +136,50 @@ require_once __DIR__ . '/includes/header.php';
       </div>
     </div>
 
-    <div id="depositAddressBox" style="display:none" class="btc-box mt-32">
+    <div id="depositAddressBox" style="display:none;opacity:0" class="btc-box mt-32">
       <h3 class="text-gold mb-16">Your BTC Deposit Address</h3>
       <img id="depQR" alt="QR Code" class="btc-qr">
-      <div class="btc-address" id="depAddress" data-copy="">Loading…</div>
-      <p style="font-size:11px;color:var(--text-muted)">Click address to copy</p>
+      <div class="btc-address btc-address-reveal" id="depAddress" data-copy="">Loading…</div>
+      <p style="font-size:11px;color:var(--text-muted)">Click address to copy · Tap &amp; hold on mobile</p>
       <p class="text-muted mt-16" style="font-size:12px">GP will be credited within ~10 minutes of 1 confirmation.</p>
     </div>
 
     <script>
     async function requestDepositAddress(currency) {
+      const box = document.getElementById('depositAddressBox');
+      const btn = document.querySelector('[onclick*="requestDepositAddress"]');
+      if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating…'; }
       const r = await fetch('/api/check_payment.php?action=gen_address&currency=' + currency, {
         method:'POST',
         body: new URLSearchParams({ csrf: '<?= h(csrf_token()) ?>', currency })
       });
       const d = await r.json();
+      if (btn) { btn.disabled = false; btn.textContent = 'Generate Address'; }
       if (d.address) {
-        document.getElementById('depositAddressBox').style.display = '';
-        document.getElementById('depAddress').textContent = d.address;
-        document.getElementById('depAddress').dataset.copy = d.address;
+        const addrEl = document.getElementById('depAddress');
+        addrEl.textContent = d.address;
+        addrEl.dataset.copy = d.address;
+        addrEl.classList.remove('btc-address-reveal');
+        void addrEl.offsetWidth; // force reflow to restart animation
+        addrEl.classList.add('btc-address-reveal');
         document.getElementById('depQR').src = 'https://chart.googleapis.com/chart?cht=qr&chs=180x180&chl=' + encodeURIComponent(d.address) + '&choe=UTF-8';
+        // Smooth reveal of the box
+        box.style.display = '';
+        requestAnimationFrame(() => {
+          box.style.transition = 'opacity 0.45s ease, transform 0.45s ease';
+          box.style.transform  = 'translateY(-10px)';
+          box.style.opacity    = '0';
+          requestAnimationFrame(() => {
+            box.style.transform = 'translateY(0)';
+            box.style.opacity   = '1';
+          });
+        });
+        // Re-init copy button
+        if (typeof initCopyBtns === 'function') initCopyBtns();
+        // Scroll to it on mobile
+        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        alert(d.error || 'Could not generate address. Please contact support.');
       }
     }
     </script>

@@ -17,19 +17,24 @@ require_once __DIR__ . '/../includes/header.php';
       <a href="/admin/users.php">👥 Users</a>
       <a href="/admin/gambling.php">🎲 Gambling</a>
       <a href="/admin/prices.php">💰 Prices</a>
+      <a href="/admin/settings.php">⚙️ Settings</a>
       <a href="/">🌐 View Site</a>
       <a href="/logout.php" style="color:var(--red)">🚪 Logout</a>
     </nav>
   </aside>
-  <div class="admin-main" style="padding:0;display:grid;grid-template-columns:300px 1fr;height:calc(100vh - 72px)">
+  <div class="admin-main" style="padding:0;display:grid;grid-template-columns:300px 1fr;height:calc(100vh - 72px);position:relative">
 
-    <!-- Sessions sidebar -->
-    <div style="border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden">
-      <div style="padding:16px;border-bottom:1px solid var(--border);font-family:'Cinzel',serif;color:var(--gold);font-weight:700">
-        💬 Active Chats <span id="sessionCount" style="color:var(--text-muted);font-size:12px"></span>
+    <!-- Sessions sidebar — desktop inline / mobile slide-out -->
+    <div id="sessionsPanel" class="admin-sessions-panel" style="position:relative;top:auto;left:auto;transform:none;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-family:'Cinzel',serif;color:var(--gold);font-weight:700">💬 Active Chats <span id="sessionCount" style="color:var(--text-muted);font-size:12px"></span></span>
+        <button id="closeSessions" onclick="toggleSessions()" style="display:none;background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer" aria-label="Close">✕</button>
       </div>
       <div id="sessionList" style="overflow-y:auto;flex:1;padding:8px"></div>
     </div>
+
+    <!-- Mobile toggle button -->
+    <button class="admin-sessions-toggle" id="sessionToggleBtn" onclick="toggleSessions()" title="Toggle chat list" aria-label="Toggle sessions">💬</button>
 
     <!-- Chat area -->
     <div style="display:flex;flex-direction:column;overflow:hidden">
@@ -143,6 +148,35 @@ document.querySelectorAll('.quick-reply').forEach(btn => {
 
 function escHtml(s) { const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
 function timeSince(ts) { const s=Math.floor((Date.now()-new Date(ts+'Z').getTime())/1000); if(s<60)return s+'s ago'; if(s<3600)return Math.floor(s/60)+'m ago'; return Math.floor(s/3600)+'h ago'; }
+
+// Mobile sessions panel toggle
+function toggleSessions() {
+  const panel  = document.getElementById('sessionsPanel');
+  const btn    = document.getElementById('sessionToggleBtn');
+  const close  = document.getElementById('closeSessions');
+  const open   = panel.classList.toggle('open');
+  if (btn)   btn.style.background   = open ? 'var(--amber)' : 'var(--gold)';
+  if (close) close.style.display    = open ? '' : 'none';
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+// On mobile (<900px) switch panel to slide-out mode
+function applyMobileLayout() {
+  const panel = document.getElementById('sessionsPanel');
+  const close = document.getElementById('closeSessions');
+  if (!panel) return;
+  if (window.innerWidth <= 900) {
+    panel.style.cssText = ''; // let CSS class handle it
+    if (close) close.style.display = panel.classList.contains('open') ? '' : 'none';
+  } else {
+    // Desktop: always visible inline
+    panel.classList.remove('open');
+    panel.style.cssText = 'border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;position:relative;top:auto;left:auto;transform:none;width:auto;height:auto;z-index:auto';
+    if (close) close.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+window.addEventListener('resize', applyMobileLayout);
+applyMobileLayout();
 
 loadSessions();
 setInterval(loadSessions, 5000);

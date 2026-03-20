@@ -104,6 +104,11 @@ const SITE = {
   username: '<?= h($user['username'] ?? '') ?>',
   csrfToken: '<?= h(csrf_token()) ?>'
 };
+// Toast display settings (controlled via admin panel)
+const TOAST_SETTINGS = {
+  enabled:  <?= get_config('toasts_enabled', '1') === '1' ? 'true' : 'false' ?>,
+  duration: <?= max(1000, min(30000, (int)get_config('toast_duration_ms', '5000'))) ?>
+};
 </script>
 <?php if (!empty($extra_js)): ?>
 <script src="<?= h($extra_js) ?>"></script>
